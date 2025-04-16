@@ -2,24 +2,56 @@
 import { create } from "zustand";
 
 type Panel = "left" | "right";
+type SidebarPosition = "left" | "right";
 
-interface UIState {
-  sidebarVisible: boolean;
-  rightSidebarVisible: boolean;
-  commandPaletteVisible: boolean;
-  focusedPanel: Panel;
-  setSidebarVisible: (visible: boolean) => void;
-  toggleCommandPalette: () => void;
-  setFocusedPanel: (panel: Panel) => void;
+interface SidebarState {
+  display: boolean;
+  width?: number;
+  pinned?: boolean;
+  collapsed?: boolean;
+  activeTabId?: string;
 }
 
-export const useUIStore = create<UIState>((set) => ({
-  sidebarVisible: true,
-  rightSidebarVisible: false,
+interface UIState {
+  sidebar: Record<SidebarPosition, SidebarState>;
+  commandPaletteVisible: boolean;
+  focusedPanel: Panel;
+  setSidebarVisible: (side: SidebarPosition, visible: boolean) => void;
+  toggleSidebar: (side: SidebarPosition) => void;
+  setFocusedPanel: (panel: Panel) => void;
+  toggleCommandPalette: () => void;
+}
+
+export const useUIStore = create<UIState>((set, get) => ({
+  sidebar: {
+    left: { display: true },
+    right: { display: false },
+  },
   commandPaletteVisible: false,
   focusedPanel: "left",
-  setSidebarVisible: (visible) => set({ sidebarVisible: visible }),
+  setSidebarVisible: (side, visible) =>
+    set((state) => ({
+      sidebar: {
+        ...state.sidebar,
+        [side]: {
+          ...state.sidebar[side],
+          display: visible,
+        },
+      },
+    })),
+  toggleSidebar: (side) =>
+    set((state) => ({
+      sidebar: {
+        ...state.sidebar,
+        [side]: {
+          ...state.sidebar[side],
+          display: !state.sidebar[side].display,
+        },
+      },
+    })),
   toggleCommandPalette: () =>
-    set((state) => ({ commandPaletteVisible: !state.commandPaletteVisible })),
+    set((state) => ({
+      commandPaletteVisible: !state.commandPaletteVisible,
+    })),
   setFocusedPanel: (panel) => set({ focusedPanel: panel }),
 }));

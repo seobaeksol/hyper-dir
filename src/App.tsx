@@ -5,8 +5,11 @@ import { Sidebar } from "./components/layout/Sidebar";
 import { Tabbar } from "./components/layout/Tabbar";
 import { Panel } from "./components/layout/Panel";
 import { Statusbar } from "./components/layout/Statusbar";
+import { useHotkeys } from "./hooks/useHotkeys";
 
 function App() {
+  useHotkeys();
+  
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
       <Titlebar />

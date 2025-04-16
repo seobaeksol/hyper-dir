@@ -1,17 +1,17 @@
 // src/components/layout/Sidebar.tsx
 import React, { useState } from "react";
-import { useUIStore } from "@/state/uiStore";
 import { SidebarTab } from "./sidebar/SidebarTab";
 import { ExplorerPanel } from "./sidebar/panels/ExplorerPanel";
 import { GitPanel } from "./sidebar/panels/GitPanel";
 import { SearchPanel } from "./sidebar/panels/SearchPanel";
 import { ConfigPanel } from "./sidebar/panels/ConfigPanel";
 import { StarredPanel } from "./sidebar/panels/StarredPanel";
+import { useSidebarController } from "@/hooks/useSidebarController";
 
 type SidebarTabType = "explorer" | "git" | "search" | "config" | "starred";
 
 export const Sidebar: React.FC<{ position: "left" | "right" }> = ({ position }) => {
-  const sidebarVisible = useUIStore((state) => state.sidebarVisible);
+  const {display} = useSidebarController(position);
   const [activeTab, setActiveTab] = useState<SidebarTabType>("explorer");
 
   const renderPanel = () => {
@@ -25,7 +25,7 @@ export const Sidebar: React.FC<{ position: "left" | "right" }> = ({ position }) 
     }
   };
 
-  if (!sidebarVisible) return null;
+  if (!display) return null;
 
   return (
     <div className={`w-60 bg-zinc-900 border-zinc-700 ${position === "left" ? "border-r" : "border-l"}`}>
