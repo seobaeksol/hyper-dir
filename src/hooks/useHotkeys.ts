@@ -13,12 +13,12 @@ export function useHotkeys() {
 
       if (isCtrl && !isAlt && e.key.toLowerCase() === "b") {
         e.preventDefault();
-        left.toggle();
+        right.toggle();
       }
 
       if (isCtrl && isAlt && e.key.toLowerCase() === "b") {
         e.preventDefault();
-        right.toggle();
+        left.toggle();
       }
     };
 
