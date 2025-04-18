@@ -20,6 +20,7 @@ interface CommandState {
   setMode: (m: CommandPaletteMode) => void;
   openCommandMode: () => void;
   openSearchMode: () => void;
+  toggleCommandPalette: (mode: CommandPaletteMode) => void;
   selectNext: () => void;
   selectPrev: () => void;
   executeSelected: () => void;
@@ -70,5 +71,10 @@ export const useCommandStore = create<CommandState>((set, get) => ({
   getMode: () => {
     const q = get().query;
     return q.trim().startsWith(">") ? "command" : "search";
+  },
+
+  toggleCommandPalette: (mode: CommandPaletteMode) => {
+    set({ query: mode === "command" ? "> " : "" });
+    useUIStore.getState().toggleCommandPalette();
   },
 }));
