@@ -21,6 +21,7 @@ interface UIState {
   setFocusedPanel: (panel: Panel) => void;
   toggleCommandPalette: () => void;
   setActiveTab: (side: SidebarPosition, tabId: string) => void;
+  setCommandPaletteVisible: (v: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set, _) => ({
@@ -62,4 +63,5 @@ export const useUIStore = create<UIState>((set, _) => ({
         [side]: { ...state.sidebar[side], activeTabId: tabId },
       },
     })),
+  setCommandPaletteVisible: (v: boolean) => set({ commandPaletteVisible: v }),
 }));

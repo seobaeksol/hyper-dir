@@ -1,5 +1,8 @@
 // src/state/commandStore.ts
 import { create } from "zustand";
+import { useUIStore } from "./uiStore";
+
+type CommandPaletteMode = "command" | "search";
 
 export interface Command {
   id: string;
@@ -14,12 +17,17 @@ interface CommandState {
   selectedIndex: number;
   setQuery: (q: string) => void;
   registerCommands: (cmds: Command[]) => void;
+  setMode: (m: CommandPaletteMode) => void;
+  openCommandMode: () => void;
+  openSearchMode: () => void;
   selectNext: () => void;
   selectPrev: () => void;
   executeSelected: () => void;
+  getMode: () => CommandPaletteMode;
 }
 
 export const useCommandStore = create<CommandState>((set, get) => ({
+  mode: "search",
   query: "",
   commands: [],
   selectedIndex: 0,
@@ -45,5 +53,22 @@ export const useCommandStore = create<CommandState>((set, get) => ({
   executeSelected: () => {
     const { commands, selectedIndex } = get();
     commands[selectedIndex]?.action();
+  },
+
+  setMode: (mode) => set({ query: mode === "command" ? "> " : "" }),
+
+  openCommandMode: () => {
+    set({ query: "> " });
+    useUIStore.getState().setCommandPaletteVisible(true);
+  },
+
+  openSearchMode: () => {
+    set({ query: "" });
+    useUIStore.getState().setCommandPaletteVisible(true);
+  },
+
+  getMode: () => {
+    const q = get().query;
+    return q.trim().startsWith(">") ? "command" : "search";
   },
 }));

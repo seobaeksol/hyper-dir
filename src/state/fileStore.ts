@@ -18,7 +18,15 @@ interface FileState {
 
 export const useFileStore = create<FileState>((set) => ({
   currentDir: "/",
-  files: [],
+  files: [
+    { name: "main.rs", path: "/main.rs", isDir: false },
+    {
+      name: "Sidebar.tsx",
+      path: "/src/components/layout/Sidebar.tsx",
+      isDir: false,
+    },
+    { name: "App.tsx", path: "/src/App.tsx", isDir: false },
+  ],
   selectedIndex: 0,
   setFiles: (files) => set({ files }),
   setCurrentDir: (path) => set({ currentDir: path }),
