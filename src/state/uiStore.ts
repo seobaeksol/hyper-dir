@@ -20,12 +20,13 @@ interface UIState {
   toggleSidebar: (side: SidebarPosition) => void;
   setFocusedPanel: (panel: Panel) => void;
   toggleCommandPalette: () => void;
+  setActiveTab: (side: SidebarPosition, tabId: string) => void;
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
   sidebar: {
-    left: { display: true },
-    right: { display: false },
+    left: { display: true, activeTabId: "explorer" },
+    right: { display: false, activeTabId: "config" },
   },
   commandPaletteVisible: false,
   focusedPanel: "left",
@@ -54,4 +55,11 @@ export const useUIStore = create<UIState>((set, get) => ({
       commandPaletteVisible: !state.commandPaletteVisible,
     })),
   setFocusedPanel: (panel) => set({ focusedPanel: panel }),
+  setActiveTab: (side, tabId) =>
+    set((state) => ({
+      sidebar: {
+        ...state.sidebar,
+        [side]: { ...state.sidebar[side], activeTabId: tabId },
+      },
+    })),
 }));
