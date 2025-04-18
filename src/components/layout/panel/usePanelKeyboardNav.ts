@@ -1,14 +1,18 @@
 // src/components/layout/panel/usePanelKeyboardNav.ts
 import { useEffect } from "react";
 import { useFileStore } from "@/state/fileStore";
+import { useUIStore } from "@/state/uiStore";
 
 export function usePanelKeyboardNav() {
   const files = useFileStore((s) => s.files);
   const selectedIndex = useFileStore((s) => s.selectedIndex);
   const setSelectedIndex = useFileStore((s) => s.setSelectedIndex);
   const loadDirectory = useFileStore((s) => s.loadDirectory);
+  const commandPaletteVisible = useUIStore((s) => s.commandPaletteVisible);
 
   useEffect(() => {
+    if (commandPaletteVisible) return;
+
     const handler = (e: KeyboardEvent) => {
       const isAlt = e.altKey;
 
@@ -68,5 +72,5 @@ export function usePanelKeyboardNav() {
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [files, selectedIndex]);
+  }, [files, selectedIndex, commandPaletteVisible]);
 }
