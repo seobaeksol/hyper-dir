@@ -25,7 +25,7 @@ interface UIState {
 
 export const useUIStore = create<UIState>((set, get) => ({
   sidebar: {
-    left: { display: true, activeTabId: "explorer" },
+    left: { display: false, activeTabId: "explorer" },
     right: { display: false, activeTabId: "config" },
   },
   commandPaletteVisible: false,
