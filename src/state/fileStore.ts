@@ -1,18 +1,12 @@
 import { create } from "zustand";
 import { dirname } from "@tauri-apps/api/path";
-import { readDirectory } from "../ipc/fs";
-
-export interface FileItem {
-  name: string;
-  path: string;
-  isDir: boolean;
-}
+import { FileEntry, readDirectory } from "../ipc/fs";
 
 interface FileState {
   currentDir: string;
-  files: FileItem[];
+  files: FileEntry[];
   selectedIndex: number;
-  setFiles: (files: FileItem[]) => void;
+  setFiles: (files: FileEntry[]) => void;
   setCurrentDir: (path: string) => void;
   setSelectedIndex: (index: number) => void;
   loadDirectory: (path: string) => Promise<void>;
@@ -28,22 +22,20 @@ export const useFileStore = create<FileState>((set) => ({
   loadDirectory: async (path) => {
     try {
       const entries = await readDirectory(path);
-      const mapped = entries.map((entry) => ({
-        name: entry.name,
-        path: entry.path,
-        isDir: entry.is_dir,
-      }));
-
       const parentPath = await dirname(path);
+
       const parentEntry = {
         name: "..",
         path: parentPath,
-        isDir: true,
+        is_dir: true,
+        size: 0,
+        modified: 0,
+        file_type: "folder",
       };
 
-      mapped.unshift(parentEntry);
+      entries.unshift(parentEntry);
 
-      set({ currentDir: path, files: mapped, selectedIndex: 0 });
+      set({ currentDir: path, files: entries, selectedIndex: 0 });
     } catch (error) {
       console.error(error);
     }
