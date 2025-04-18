@@ -3,7 +3,7 @@ import "./App.css";
 import { Titlebar } from "./components/layout/Titlebar";
 import { Sidebar } from "./components/layout/Sidebar";
 import { Tabbar } from "./components/layout/Tabbar";
-import { Panel } from "./components/layout/Panel";
+import { Panel } from "./components/layout/panel/Panel";
 import { Statusbar } from "./components/layout/Statusbar";
 import { useHotkeys } from "./hooks/useHotkeys";
 import { CommandPalette } from "./components/CommandPalette";
@@ -12,13 +12,13 @@ import { useEffect } from "react";
 
 function App() {
   useHotkeys();
-  
+
   useEffect(() => {
     registerDefaultCommands();
   }, []);
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-zinc-950">
       <Titlebar />
       <div className="flex flex-1">
         <Sidebar position="left" />
