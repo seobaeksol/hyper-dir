@@ -6,10 +6,16 @@ import { Tabbar } from "./components/layout/Tabbar";
 import { Panel } from "./components/layout/Panel";
 import { Statusbar } from "./components/layout/Statusbar";
 import { useHotkeys } from "./hooks/useHotkeys";
-import { CommandPalette } from "./components/CommandPalettte";
+import { CommandPalette } from "./components/CommandPalette";
+import { registerDefaultCommands } from "./commands/registerDefaultCommands";
+import { useEffect } from "react";
 
 function App() {
   useHotkeys();
+  
+  useEffect(() => {
+    registerDefaultCommands();
+  }, []);
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
