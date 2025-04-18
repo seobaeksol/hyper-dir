@@ -1,14 +1,15 @@
 // src/components/layout/panel/Panel.tsx
 import { useEffect } from "react";
 import { useFileStore } from "@/state/fileStore";
-import { useSortedFiles } from "./useSortedFiles";
 import { PanelHeader } from "./PanelHeader";
 import { PanelItem } from "./PanelItem";
+import { usePanelKeyboardNav } from "./usePanelKeyboardNav";
 
 export const Panel = () => {
-  const { currentDir, selectedIndex, setSelectedIndex, loadDirectory } =
+  const { currentDir, files, selectedIndex, setSelectedIndex, loadDirectory } =
     useFileStore();
-  const sortedFiles = useSortedFiles();
+
+  usePanelKeyboardNav();
 
   useEffect(() => {
     loadDirectory(currentDir);
@@ -16,10 +17,12 @@ export const Panel = () => {
 
   return (
     <div className="w-full p-2">
-      <div className="font-semibold mb-2 text-xs opacity-70">{currentDir}</div>
+      <div className="font-semibold mb-2 text-xs opacity-70 text-white">
+        {currentDir}
+      </div>
       <ul className="text-sm space-y-1">
         <PanelHeader />
-        {sortedFiles.map((file, idx) => (
+        {files.map((file, idx) => (
           <PanelItem
             key={file.path + idx}
             file={file}
