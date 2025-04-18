@@ -1,9 +1,25 @@
 // src/components/CommandPalette.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import { useUIStore } from "@/state/uiStore";
 
 export const CommandPalette: React.FC = () => {
   const visible = useUIStore((s) => s.commandPaletteVisible);
+  const toggle = useUIStore((s) => s.toggleCommandPalette);
+
+  // Escape Key Handling
+  useEffect(() => {
+    if (!visible) return;
+
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        toggle(); // Close
+      }
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [visible]);
 
   if (!visible) return null;
 
