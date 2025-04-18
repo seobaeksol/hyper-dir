@@ -27,7 +27,7 @@ export const Sidebar: React.FC<{ position: "left" | "right" }> = ({ position }) 
 
   return (
     <div className={`w-60 bg-zinc-900 border-zinc-700 ${position === "left" ? "border-r" : "border-l"}`}>
-      {/* 탭 아이콘 */}
+      {/* Tab Icons */}
       <div className="flex flex-row bg-zinc-800 text-white h-10 items-center px-2 gap-1 border-b border-zinc-700">
         {TABS.map((tab) => (
           <SidebarTab
@@ -38,7 +38,7 @@ export const Sidebar: React.FC<{ position: "left" | "right" }> = ({ position }) 
           />
         ))}
       </div>
-      {/* 패널 콘텐츠 */}
+      {/* Panel Content */}
       <div className="p-2 text-sm text-white h-[calc(100%-2.5rem)] overflow-y-auto">
         {ActivePanel}
       </div>
