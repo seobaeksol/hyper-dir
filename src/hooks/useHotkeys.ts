@@ -1,12 +1,13 @@
 // src/hooks/useHotkeys.ts
 import { useEffect } from "react";
 import { useSidebarController } from "./useSidebarController";
-import { useUIStore } from "@/state/uiStore";
+import { useCommandStore } from "@/state/commandStore";
 
 export function useHotkeys() {
   const left = useSidebarController("left");
   const right = useSidebarController("right");
-  const toggleCommandPalette = useUIStore((s) => s.toggleCommandPalette);
+  const openSearchMode = useCommandStore((s) => s.openSearchMode);
+  const openCommandMode = useCommandStore((s) => s.openCommandMode);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -24,10 +25,16 @@ export function useHotkeys() {
         left.toggle();
       }
 
-      // Ctrl + P → 커맨드 팔레트 열기
+      // Ctrl + P → Command Palette with search mode
       if (isCtrl && !isShift && e.key.toLowerCase() === "p") {
         e.preventDefault();
-        toggleCommandPalette();
+        openSearchMode();
+      }
+
+      // Ctrl + Shift + P → Command Palette with command mode
+      if (isCtrl && isShift && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        openCommandMode();
       }
     };
 
