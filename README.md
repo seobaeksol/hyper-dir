@@ -1,104 +1,115 @@
-# 🚀 Hyper-Dir
+# ⚡ Hyper-Dir
 
-**Hyper-Dir** is a high-performance, keyboard-first file explorer replacement for Windows.  
-Built with **Rust**, **React**, and **Tauri**, it empowers developers and power users with a split-view interface, fuzzy search, and extensibility—designed to replace traditional file explorers with something faster and more powerful.
-
----
-
-## 🔥 Key Features
-
-- ⚡ **Keyboard-First Interface**  
-  Navigate, search, and manipulate files with blazing speed using keyboard shortcuts and a command palette.
-
-- 🖥️ **Split View & Tabs**  
-  Manage multiple directories in parallel—like your favorite code editors.
-
-- 🔍 **Fuzzy Search**  
-  Quickly find files, folders, and commands using smart, partial-match search.
-
-- 🧩 **Extensible**  
-  (Coming soon) Plugin-friendly architecture with configurable actions and keybindings.
-
-- 💡 **Developer-Centric UX**  
-  Inspired by tools like **VSCode**, **Ranger**, and **Midnight Commander**.
+**Hyper-Dir** is a productivity-focused, keyboard-first file explorer replacement for Windows.  
+It is designed for developers and power users who need speed, customizability, and powerful navigation.
 
 ---
 
-## 👤 Who It's For
+## 🔥 Project Vision
 
-- Developers and sysadmins tired of clunky Explorer workflows
-- Keyboard-heavy users who want maximum speed and efficiency
-- Power users managing deep directory trees or large codebases
+Hyper-Dir delivers a fast, customizable, and keyboard-centric experience tailored for advanced users.  
+Inspired by **Visual Studio Code**, **Ranger**, and **Midnight Commander**, it provides a modern UI and power features without mouse dependency.
 
 ---
 
-## ⚙️ Tech Stack
+## 🧠 Core Concepts
 
-| Layer      | Technology                                         |
-| ---------- | -------------------------------------------------- |
-| Backend    | Rust (`walkdir`, `notify`, `std::fs`, async tasks) |
-| Frontend   | React + TypeScript                                 |
-| IPC Bridge | Tauri or custom RPC                                |
-| Runtime    | Bun (for serving React)                            |
-| Platform   | Windows (native build)                             |
+- ⌨️ **Keyboard-first interaction**: Navigate, search, and manage files with minimal mouse use.
+- 🖥️ **Split view and tabs**: View and manage multiple directories side-by-side.
+- 🔍 **Powerful fuzzy search**: Quickly find files, folders, and commands.
+- 🧩 **Command palette**: A universal entry point for all operations.
+- 🧬 **Plugin-friendly architecture**: Future-proof system with custom extensions and keybindings.
+- 👩‍💻 **Developer-centric UX**: Designed to boost focus and reduce context switching.
+
+---
+
+## 💻 Technology Stack
+
+| Layer            | Tech                                                |
+| ---------------- | --------------------------------------------------- |
+| **Frontend**     | React + TypeScript, TailwindCSS, Zustand, Vite, Bun |
+| **Backend**      | Rust, Tauri v2, walkdir, notify                     |
+| **IPC / Bridge** | Tauri commands, plugin-based messaging              |
+| **Platform**     | Windows (native, transparent window support)        |
 
 ---
 
 ## 📦 Project Structure
 
 ```
-
 hyper-dir/
-├── src-tauri/ # Rust backend for FS ops, IPC, config
-│ ├── fs/ # File traversal, actions, metadata
-│ ├── services/ # Background tasks, watchers, caching
-│ └── config/ # Keybindings, app state, user config
+├── src-tauri/                  # Rust backend (Tauri)
+│   ├── fs/                     # Filesystem logic
+│   ├── services/               # Background tasks, watchers, indexing
+│   └── config/                 # App config and keybindings
 ├── frontend/
-│ ├── src/components/ # Panels, tabs, file list, command UI
-│ ├── src/hooks/ # Keyboard input, state sync
-│ ├── src/utils/ # Path parsing, fuzzy matchers, helpers
-│ ├── src/state/ # Zustand or Redux store
-│ └── public/ # Static assets
-├── bun.config.ts # Bun runtime config
-└── README.md
-
+│   ├── src/
+│   │   ├── components/         # UI components (panels, tabs, palette)
+│   │   ├── hooks/              # Custom React hooks
+│   │   ├── state/              # Zustand global state
+│   │   ├── utils/              # Fuzzy search, path, keyboard utils
+│   │   └── layout/panel/       # Panel view-related components
+│   └── public/                 # Static files, app icon, config
+├── bun.config.ts               # Bun dev server config
+└── tauri.conf.json             # Tauri app config
 ```
 
 ---
 
-## 🛠️ Short-Term Roadmap
+## 🚧 Current Progress
 
-- [ ] UI Wireframe & Navigation Model
-- [ ] MVP Layout (Split View + Tabs)
-- [ ] React ↔ Rust Bridge via Tauri
-- [ ] Fuzzy Search Engine
-- [ ] Command Palette Logic
-- [ ] Configurable Keybinding Schema
+### ✅ Done
+
+- Project architecture, vision, UI concept finalized
+- Titlebar & basic layout scaffolded (VSCode style)
+- Zustand-based global state management
+- TailwindCSS + Bun + Vite environment configured
+- Panel.tsx layout implemented
+- File list rendering and basic sort logic
+- CommandPalette component with basic toggle
+- Icon and favicon assets created
+
+### 🛠️ In Progress
+
+- Panel sorting logic integration into fileStore
+- Focus management between CommandPalette and Panels
+- Sidebar structure and tree view (design phase)
+- Tab management and multi-panel support
+- Frontend ↔ Backend communication setup with Tauri v2
+- Transparent window loading and splash screen control
 
 ---
 
-## 🧠 Inspiration & Credits
+## 🎯 Short-Term Goals
+
+- [ ] Define complete UI wireframe
+- [ ] Build MVP layout with split panels and tabs
+- [ ] Implement fuzzy search module
+- [ ] Design and finalize command palette logic
+- [ ] Backend filesystem API (walkdir, notify)
+- [ ] Keybinding schema and default shortcuts
+
+---
+
+## 🧠 Inspirations
 
 - [Visual Studio Code](https://code.visualstudio.com/)
-- [Ranger (CLI file manager)](https://github.com/ranger/ranger)
+- [Ranger](https://github.com/ranger/ranger)
+- [Midnight Commander](https://midnight-commander.org/)
 - [Tauri](https://tauri.app/)
 - [walkdir crate](https://docs.rs/walkdir)
 
 ---
 
-## 📄 License
+## 🧑‍💻 For Contributors
 
-TBD – will be added as the project nears initial public release.
+We're building this as a productivity-enhancing tool for developers.  
+If you enjoy working with Rust, Tauri, or keyboard-focused UIs, feel free to contribute!
 
----
-
-## 🤝 Contributions
-
-Currently in early development – core contributors only.
-Public contributions and plugin SDKs will be supported in a future milestone.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
 
 ---
 
-Made with ❤️ by developers who live in the terminal.
+## 📜 License
 
----
+MIT © 2025 Hyper-Dir Contributors
