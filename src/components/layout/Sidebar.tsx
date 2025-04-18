@@ -10,37 +10,37 @@ import { useSidebarController } from "@/hooks/useSidebarController";
 
 type SidebarTabType = "explorer" | "git" | "search" | "config" | "starred";
 
-export const Sidebar: React.FC<{ position: "left" | "right" }> = ({ position }) => {
-  const {display} = useSidebarController(position);
-  const [activeTab, setActiveTab] = useState<SidebarTabType>("explorer");
+const TABS = [
+  { id: "explorer", icon: "📁", panel: <ExplorerPanel /> },
+  { id: "search", icon: "🔍", panel: <SearchPanel /> },
+  { id: "git", icon: "🔃", panel: <GitPanel /> },
+  { id: "config", icon: "⚙️", panel: <ConfigPanel /> },
+  { id: "starred", icon: "⭐", panel: <StarredPanel /> },
+];
 
-  const renderPanel = () => {
-    switch (activeTab) {
-      case "explorer": return <ExplorerPanel />;
-      case "git": return <GitPanel />;
-      case "search": return <SearchPanel />;
-      case "config": return <ConfigPanel />;
-      case "starred": return <StarredPanel />;
-      default: return null;
-    }
-  };
+export const Sidebar: React.FC<{ position: "left" | "right" }> = ({ position }) => {
+  const { display, activeTabId, setActiveTab } = useSidebarController(position);
 
   if (!display) return null;
+
+  const ActivePanel = TABS.find((tab) => tab.id === activeTabId)?.panel;
 
   return (
     <div className={`w-60 bg-zinc-900 border-zinc-700 ${position === "left" ? "border-r" : "border-l"}`}>
       {/* 탭 아이콘 */}
       <div className="flex flex-row bg-zinc-800 text-white h-10 items-center px-2 gap-1 border-b border-zinc-700">
-        <SidebarTab icon="📁" active={activeTab === "explorer"} onClick={() => setActiveTab("explorer")} />
-        <SidebarTab icon="🔍" active={activeTab === "search"} onClick={() => setActiveTab("search")} />
-        <SidebarTab icon="🔃" active={activeTab === "git"} onClick={() => setActiveTab("git")} />
-        <SidebarTab icon="⚙️" active={activeTab === "config"} onClick={() => setActiveTab("config")} />
-        <SidebarTab icon="⭐" active={activeTab === "starred"} onClick={() => setActiveTab("starred")} />
+        {TABS.map((tab) => (
+          <SidebarTab
+            key={tab.id}
+            icon={tab.icon}
+            active={activeTabId === tab.id}
+            onClick={() => setActiveTab(tab.id)}
+          />
+        ))}
       </div>
-
       {/* 패널 콘텐츠 */}
       <div className="p-2 text-sm text-white h-[calc(100%-2.5rem)] overflow-y-auto">
-        {renderPanel()}
+        {ActivePanel}
       </div>
     </div>
   );
