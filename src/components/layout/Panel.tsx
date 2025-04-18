@@ -1,5 +1,6 @@
 // src/components/layout/Panel.tsx
-import { useFileStore } from "@/state/fileStore";
+import { FileEntry } from "@/ipc/fs";
+import { SortKey, SortOrder, useFileStore } from "@/state/fileStore";
 import React, { useEffect } from "react";
 
 function formatBytes(bytes?: number) {
@@ -18,14 +19,52 @@ function formatTimestamp(ts?: number) {
   if (!ts) return "-";
   return new Date(ts * 1000).toLocaleString();
 }
+function sortFiles(
+  files: FileEntry[],
+  key: SortKey,
+  order: SortOrder
+): FileEntry[] {
+  return [...files].sort((a, b) => {
+    // 1. ".." First
+    if (a.name === ".." && b.name !== "..") return -1;
+    if (a.name !== ".." && b.name === "..") return 1;
+
+    // 2. Directory First
+    if (key !== "file_type" && a.is_dir && !b.is_dir) return -1;
+    if (key !== "file_type" && !a.is_dir && b.is_dir) return 1;
+
+    // 3. Sort by key
+    const va = a[key] ?? 0;
+    const vb = b[key] ?? 0;
+
+    if (typeof va === "string" && typeof vb === "string") {
+      return order === "asc" ? va.localeCompare(vb) : vb.localeCompare(va);
+    } else if (typeof va === "number" && typeof vb === "number") {
+      return order === "asc" ? va - vb : vb - va;
+    }
+
+    return 0;
+  });
+}
 
 export const Panel: React.FC = () => {
-  const { currentDir, files, selectedIndex, setSelectedIndex, loadDirectory } =
-    useFileStore();
+  const {
+    currentDir,
+    files,
+    selectedIndex,
+    setSelectedIndex,
+    loadDirectory,
+    sortKey,
+    sortOrder,
+    setSortKey,
+    setSortOrder,
+  } = useFileStore();
 
   useEffect(() => {
     loadDirectory(currentDir);
   }, [currentDir]);
+
+  const sortedFiles = sortFiles(files, sortKey, sortOrder);
 
   return (
     <div className="flex flex-1 bg-zinc-950 text-white overflow-hidden">
@@ -37,13 +76,35 @@ export const Panel: React.FC = () => {
 
         {/* Files List */}
         <ul className="text-sm space-y-1">
-          <li className="px-2 py-1 text-xs uppercase text-zinc-500 flex">
-            <span className="flex-1">Name</span>
-            <span className="w-24 text-right">Type</span>
-            <span className="w-24 text-right">Size</span>
-            <span className="w-36 text-right">Modified</span>
+          <li className="px-2 py-1 text-xs uppercase text-zinc-500 flex border-b border-zinc-700">
+            <span
+              className="flex-1 cursor-pointer"
+              onClick={() => setSortKey("name")}
+            >
+              Name {sortKey === "name" && (sortOrder === "asc" ? "▲" : "▼")}
+            </span>
+            <span
+              className="w-24 text-right cursor-pointer"
+              onClick={() => setSortKey("file_type")}
+            >
+              Type{" "}
+              {sortKey === "file_type" && (sortOrder === "asc" ? "▲" : "▼")}
+            </span>
+            <span
+              className="w-24 text-right cursor-pointer"
+              onClick={() => setSortKey("size")}
+            >
+              Size {sortKey === "size" && (sortOrder === "asc" ? "▲" : "▼")}
+            </span>
+            <span
+              className="w-36 text-right cursor-pointer"
+              onClick={() => setSortKey("modified")}
+            >
+              Modified{" "}
+              {sortKey === "modified" && (sortOrder === "asc" ? "▲" : "▼")}
+            </span>
           </li>
-          {files.map((file, idx) => (
+          {sortedFiles.map((file, idx) => (
             <li
               key={file.path + idx}
               onClick={() => {
@@ -56,7 +117,13 @@ export const Panel: React.FC = () => {
               }`}
             >
               <span className="flex-1 truncate">
-                {file.is_dir ? "📁" : "📄"} {file.name}
+                {file.name === ".." ? (
+                  <span className="text-zinc-500">↩️ ..</span>
+                ) : (
+                  <>
+                    {file.is_dir ? "📁" : "📄"} {file.name}
+                  </>
+                )}
               </span>
               {/* 타입 */}
               <span className="w-24 text-right text-xs opacity-70">
