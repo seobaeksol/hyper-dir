@@ -1,16 +1,6 @@
 import { create } from "zustand";
 import { dirname } from "@tauri-apps/api/path";
-import { invoke } from "@tauri-apps/api/core";
-
-type FileEntry = {
-  name: string;
-  path: string;
-  is_dir: boolean;
-};
-
-async function loadDirectory(path: string): Promise<FileEntry[]> {
-  return await invoke("read_directory", { path });
-}
+import { readDirectory } from "../ipc/fs";
 
 export interface FileItem {
   name: string;
@@ -37,7 +27,7 @@ export const useFileStore = create<FileState>((set) => ({
   setSelectedIndex: (index) => set({ selectedIndex: index }),
   loadDirectory: async (path) => {
     try {
-      const entries = await loadDirectory(path);
+      const entries = await readDirectory(path);
       const mapped = entries.map((entry) => ({
         name: entry.name,
         path: entry.path,
