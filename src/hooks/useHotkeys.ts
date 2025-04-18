@@ -6,8 +6,7 @@ import { useCommandStore } from "@/state/commandStore";
 export function useHotkeys() {
   const left = useSidebarController("left");
   const right = useSidebarController("right");
-  const openSearchMode = useCommandStore((s) => s.openSearchMode);
-  const openCommandMode = useCommandStore((s) => s.openCommandMode);
+  const toggleCommandPalette = useCommandStore((s) => s.toggleCommandPalette);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -28,13 +27,13 @@ export function useHotkeys() {
       // Ctrl + P → Command Palette with search mode
       if (isCtrl && !isShift && e.key.toLowerCase() === "p") {
         e.preventDefault();
-        openSearchMode();
+        toggleCommandPalette("search");
       }
 
       // Ctrl + Shift + P → Command Palette with command mode
       if (isCtrl && isShift && e.key.toLowerCase() === "p") {
         e.preventDefault();
-        openCommandMode();
+        toggleCommandPalette("command");
       }
     };
 
