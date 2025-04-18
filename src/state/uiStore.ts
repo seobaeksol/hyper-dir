@@ -23,7 +23,7 @@ interface UIState {
   setActiveTab: (side: SidebarPosition, tabId: string) => void;
 }
 
-export const useUIStore = create<UIState>((set, get) => ({
+export const useUIStore = create<UIState>((set, _) => ({
   sidebar: {
     left: { display: false, activeTabId: "explorer" },
     right: { display: false, activeTabId: "config" },

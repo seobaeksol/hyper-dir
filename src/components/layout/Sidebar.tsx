@@ -1,5 +1,5 @@
 // src/components/layout/Sidebar.tsx
-import React, { useState } from "react";
+import React from "react";
 import { SidebarTab } from "./sidebar/SidebarTab";
 import { ExplorerPanel } from "./sidebar/panels/ExplorerPanel";
 import { GitPanel } from "./sidebar/panels/GitPanel";
@@ -8,7 +8,6 @@ import { ConfigPanel } from "./sidebar/panels/ConfigPanel";
 import { StarredPanel } from "./sidebar/panels/StarredPanel";
 import { useSidebarController } from "@/hooks/useSidebarController";
 
-type SidebarTabType = "explorer" | "git" | "search" | "config" | "starred";
 
 const TABS = [
   { id: "explorer", icon: "📁", panel: <ExplorerPanel /> },
