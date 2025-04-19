@@ -5,6 +5,7 @@ type Tab = {
   id: string;
   path: string;
   title: string;
+  isActive: boolean;
 };
 
 type Panel = {
@@ -24,6 +25,7 @@ type PanelStore = {
   addTab: (panelId: string, path: string) => void;
   closeTab: (panelId: string, tabId: string) => void;
   switchTab: (panelId: string, tabId: string) => void;
+  updateTabTitle: (panelId: string, tabId: string, title: string) => void;
 };
 
 export const usePanelStore = create<PanelStore>((set, get) => ({
@@ -39,7 +41,7 @@ export const usePanelStore = create<PanelStore>((set, get) => ({
     const newPanel: Panel = {
       id: panelId,
       activeTabId: tabId,
-      tabs: [{ id: tabId, path: home, title }],
+      tabs: [{ id: tabId, path: home, title, isActive: true }],
     };
 
     set((state) => ({
@@ -64,12 +66,18 @@ export const usePanelStore = create<PanelStore>((set, get) => ({
 
     const tabId = nanoid();
     const title = path.split(/[/\\]/).pop() || path;
-    const newTab: Tab = { id: tabId, path, title };
+    const newTab: Tab = { id: tabId, path, title, isActive: true };
 
     set((state) => ({
       panels: state.panels.map((p) =>
         p.id === panelId
-          ? { ...p, tabs: [...p.tabs, newTab], activeTabId: tabId }
+          ? {
+              ...p,
+              tabs: p.tabs
+                .map((t) => ({ ...t, isActive: false }))
+                .concat(newTab),
+              activeTabId: tabId,
+            }
           : p
       ),
     }));
@@ -81,7 +89,11 @@ export const usePanelStore = create<PanelStore>((set, get) => ({
         if (p.id !== panelId) return p;
         const newTabs = p.tabs.filter((t) => t.id !== tabId);
         const newActive = newTabs[0]?.id || "";
-        return { ...p, tabs: newTabs, activeTabId: newActive };
+        return {
+          ...p,
+          tabs: newTabs.map((t) => ({ ...t, isActive: t.id === newActive })),
+          activeTabId: newActive,
+        };
       }),
     }));
   },
@@ -89,7 +101,26 @@ export const usePanelStore = create<PanelStore>((set, get) => ({
   switchTab: (panelId, tabId) => {
     set((state) => ({
       panels: state.panels.map((p) =>
-        p.id === panelId ? { ...p, activeTabId: tabId } : p
+        p.id === panelId
+          ? {
+              ...p,
+              tabs: p.tabs.map((t) => ({ ...t, isActive: t.id === tabId })),
+              activeTabId: tabId,
+            }
+          : p
+      ),
+    }));
+  },
+
+  updateTabTitle: (panelId, tabId, title) => {
+    set((state) => ({
+      panels: state.panels.map((p) =>
+        p.id === panelId
+          ? {
+              ...p,
+              tabs: p.tabs.map((t) => (t.id === tabId ? { ...t, title } : t)),
+            }
+          : p
       ),
     }));
   },

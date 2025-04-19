@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { FileEntry, readDirectory } from "../ipc/fs";
 import { dirname } from "@tauri-apps/api/path";
+import { usePanelStore } from "./panelStore";
 
 export type SortKey = "name" | "file_type" | "size" | "modified";
 export type SortOrder = "asc" | "desc";
@@ -163,6 +164,11 @@ export const useFileStore = create<FileStore>((set, get) => ({
       } catch (error) {
         console.error("Failed to get parent directory:", error);
       }
+
+      // Update tab title
+      const panelStore = usePanelStore.getState();
+      const tabTitle = path.split("/").pop() || path;
+      panelStore.updateTabTitle(panelId, tabId, tabTitle);
 
       set((store) => ({
         fileStates: {
