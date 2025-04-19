@@ -1,13 +1,14 @@
 import React from "react";
 import { usePanelStore } from "@/state/panelStore";
 import { useFileStore } from "@/state/fileStore";
+import { closeTab, switchTab, openTab } from "@/state/actions";
 
 interface TabbarProps {
   panelId: string;
 }
 
 export const Tabbar: React.FC<TabbarProps> = ({ panelId }) => {
-  const { panels, addTab, closeTab, switchTab } = usePanelStore();
+  const { panels } = usePanelStore();
   const { getCurrentFileState } = useFileStore();
   const panel = panels.find((p) => p.id === panelId);
 
@@ -43,7 +44,7 @@ export const Tabbar: React.FC<TabbarProps> = ({ panelId }) => {
         ))}
         <button
           className="px-2 py-1 text-xs opacity-50 hover:opacity-100"
-          onClick={() => addTab(panelId, currentDir)}
+          onClick={() => openTab(currentDir)}
         >
           +
         </button>
