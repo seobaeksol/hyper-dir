@@ -18,28 +18,29 @@ export const Tabbar: React.FC<TabbarProps> = ({ panelId }) => {
   const { currentDir } = fileState;
 
   return (
-    <div className="h-8 bg-zinc-800 border-b border-zinc-700 flex items-center px-2 overflow-x-auto">
+    <div className="h-8 bg-zinc-800 flex items-center px-2 overflow-x-auto">
       <div className="flex gap-1 text-sm text-white">
         {panel.tabs.map((tab) => (
-          <div
-            key={tab.id}
-            className={`flex items-center gap-1 px-3 py-1 rounded-t-sm ${
-              tab.id === panel.activeTabId
-                ? "bg-zinc-700 font-bold"
-                : "hover:bg-zinc-700 opacity-75"
-            }`}
-            onClick={() => switchTab(panelId, tab.id)}
-          >
-            <span>{tab.title}</span>
-            <button
-              className="text-xs opacity-50 hover:opacity-100"
-              onClick={(e) => {
-                e.stopPropagation();
-                closeTab(panelId, tab.id);
-              }}
+          <div className="relative group">
+            <div
+              className={`flex items-center justify-between gap-1 px-3 py-1 rounded-t-sm min-w-[120px] transition-colors ${
+                tab.id === panel.activeTabId
+                  ? "bg-zinc-700 text-white border-b-2 border-zinc-500"
+                  : "bg-zinc-900 text-zinc-400 hover:bg-zinc-700 border-b-2 border-zinc-900"
+              }`}
+              onClick={() => switchTab(panelId, tab.id)}
             >
-              ✕
-            </button>
+              <span className="truncate">{tab.title}</span>
+              <button
+                className="opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeTab(panelId, tab.id);
+                }}
+              >
+                ✕
+              </button>
+            </div>
           </div>
         ))}
         <button
