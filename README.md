@@ -1,112 +1,119 @@
 # ⚡ Hyper-Dir
 
 **Hyper-Dir** is a productivity-focused, keyboard-first file explorer replacement for Windows.  
-It is designed for developers and power users who need speed, customizability, and powerful navigation.
+Built with **Tauri + Rust + React**, it is designed to enhance directory navigation for developers and power users who want speed, tabs, fuzzy search, and full keyboard control.
 
 ---
 
-## 🔥 Project Vision
+## 🔥 Vision
 
-Hyper-Dir delivers a fast, customizable, and keyboard-centric experience tailored for advanced users.  
-Inspired by **Visual Studio Code**, **Ranger**, and **Midnight Commander**, it provides a modern UI and power features without mouse dependency.
+Hyper-Dir aims to minimize context switching by providing a fast and intuitive file manager that emphasizes:
 
----
-
-## 🧠 Core Concepts
-
-- ⌨️ **Keyboard-first interaction**: Navigate, search, and manage files with minimal mouse use.
-- 🖥️ **Split view and tabs**: View and manage multiple directories side-by-side.
-- 🔍 **Powerful fuzzy search**: Quickly find files, folders, and commands.
-- 🧩 **Command palette**: A universal entry point for all operations.
-- 🧬 **Plugin-friendly architecture**: Future-proof system with custom extensions and keybindings.
-- 👩‍💻 **Developer-centric UX**: Designed to boost focus and reduce context switching.
+- **Keyboard-first workflow** (command palette, shortcuts, modal navigation)
+- **Multi-panel, tabbed browsing** (VSCode-like layout)
+- **Powerful search** (fuzzy file/command search)
+- **Customizable, extensible architecture** (plugin-friendly)
 
 ---
 
-## 💻 Technology Stack
+## 💻 Tech Stack
 
-| Layer            | Tech                                                |
-| ---------------- | --------------------------------------------------- |
-| **Frontend**     | React + TypeScript, TailwindCSS, Zustand, Vite, Bun |
-| **Backend**      | Rust, Tauri v2, walkdir, notify                     |
-| **IPC / Bridge** | Tauri commands, plugin-based messaging              |
-| **Platform**     | Windows (native, transparent window support)        |
+| Layer      | Technology                     |
+| ---------- | ------------------------------ |
+| Frontend   | React, TypeScript, TailwindCSS |
+| Backend    | Rust, Tauri v2                 |
+| State Mgmt | Zustand                        |
+| Tooling    | Bun, Vite                      |
+| OS Target  | Windows (native app via Tauri) |
 
 ---
 
-## 📦 Project Structure
+## 📁 Project Structure
 
 ```
-hyper-dir/
-├── src-tauri/                  # Rust backend (Tauri)
-│   ├── fs/                     # Filesystem logic
-│   ├── services/               # Background tasks, watchers, indexing
-│   └── config/                 # App config and keybindings
-├── frontend/
-│   ├── src/
-│   │   ├── components/         # UI components (panels, tabs, palette)
-│   │   ├── hooks/              # Custom React hooks
-│   │   ├── state/              # Zustand global state
-│   │   ├── utils/              # Fuzzy search, path, keyboard utils
-│   │   └── layout/panel/       # Panel view-related components
-│   └── public/                 # Static files, app icon, config
-├── bun.config.ts               # Bun dev server config
-└── tauri.conf.json             # Tauri app config
+src/
+├── App.tsx, main.tsx, App.css         # App entry and mount
+│
+├── commands/                          # Commands used by the command palette
+│   ├── commandList.ts
+│   └── registerDefaultCommands.ts
+│
+├── components/
+│   ├── CommandPalette.tsx             # Command palette UI
+│   └── layout/
+│       ├── Titlebar.tsx               # Custom titlebar (VSCode style)
+│       ├── Statusbar.tsx              # Bottom status bar
+│       ├── Sidebar.tsx                # Layout for side tabs
+│       │
+│       ├── panel/                     # File browsing panel (main view)
+│       │   ├── Panel.tsx              # Core panel layout
+│       │   ├── PanelFileList.tsx      # File list display
+│       │   ├── PanelHeader.tsx        # Current path + controls
+│       │   ├── PanelItem.tsx          # Each file/folder row
+│       │   ├── Tabbar.tsx             # Tabs per panel
+│       │   ├── PanelWrapper.tsx       # Wrapper for tabbed panels
+│       │   └── usePanelKeyboardNav.ts # Panel key navigation
+│       │
+│       └── sidebar/
+│           ├── SidebarTab.tsx         # Top-level sidebar tab
+│           └── panels/                # Sidebar tab content panels
+│               ├── ExplorerPanel.tsx
+│               ├── SearchPanel.tsx
+│               ├── GitPanel.tsx
+│               ├── StarredPanel.tsx
+│               └── ConfigPanel.tsx
+│
+├── hooks/                             # React hooks
+│   ├── useHotkeys.ts
+│   └── useSidebarController.ts
+│
+├── ipc/                               # IPC bindings to Tauri commands
+│   ├── commands.ts
+│   └── fs.ts
+│
+└── state/                             # Zustand state management
+    ├── actions.ts
+    ├── commandStore.ts
+    ├── fileStore.ts
+    ├── panelStore.ts
+    ├── uiStore.ts
+    └── index.ts
 ```
 
 ---
 
-## 🚧 Current Progress
+## 🧠 Current Features
 
-### ✅ Done
-
-- Project architecture, vision, UI concept finalized
-- Titlebar & basic layout scaffolded (VSCode style)
-- Zustand-based global state management
-- TailwindCSS + Bun + Vite environment configured
-- Panel.tsx layout implemented
-- File list rendering and basic sort logic
-- CommandPalette component with basic toggle
-- Icon and favicon assets created
-
-### 🛠️ In Progress
-
-- Panel sorting logic integration into fileStore
-- Focus management between CommandPalette and Panels
-- Sidebar structure and tree view (design phase)
-- Tab management and multi-panel support
-- Frontend ↔ Backend communication setup with Tauri v2
-- Transparent window loading and splash screen control
+✅ Titlebar, Statusbar, Panel layout  
+✅ Panel/tab-based navigation with keyboard shortcuts  
+✅ Command palette with dynamic command registration  
+✅ File listing and sorting per directory  
+✅ Sidebar with multiple panels (Explorer, Git, etc.)  
+✅ IPC setup between frontend and backend (Tauri)  
+🛠️ In-progress: fuzzy search, multi-panel sync, plugin support
 
 ---
 
-## 🎯 Short-Term Goals
+## 🎯 Short-Term Roadmap
 
-- [ ] Define complete UI wireframe
-- [ ] Build MVP layout with split panels and tabs
-- [ ] Implement fuzzy search module
-- [ ] Design and finalize command palette logic
-- [ ] Backend filesystem API (walkdir, notify)
-- [ ] Keybinding schema and default shortcuts
-
----
-
-## 🧠 Inspirations
-
-- [Visual Studio Code](https://code.visualstudio.com/)
-- [Ranger](https://github.com/ranger/ranger)
-- [Midnight Commander](https://midnight-commander.org/)
-- [Tauri](https://tauri.app/)
-- [walkdir crate](https://docs.rs/walkdir)
+- [ ] Fuzzy search for file names & commands
+- [ ] Define and parse keybinding schema
+- [ ] Expand Command Palette with context-aware actions
+- [ ] File operations and directory watchers (Rust side)
+- [ ] Plugin architecture (for sidebar panels, commands)
+- [ ] Improve focus management and keyboard routing
 
 ---
 
-## 🧑‍💻 For Contributors
+## 🧑‍💻 Contributing
 
-We're building this as a productivity-enhancing tool for developers.  
-If you enjoy working with Rust, Tauri, or keyboard-focused UIs, feel free to contribute!
+We welcome contributions from Rustaceans, frontend engineers, and productivity tool enthusiasts!
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
+```bash
+git checkout -b feat/<feature-name>
+```
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for commit/message guidelines and branch strategy.
 
 ---
 
