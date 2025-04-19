@@ -30,7 +30,9 @@ export const Tabbar: React.FC<TabbarProps> = ({ panelId }) => {
               }`}
               onClick={() => switchTab(panelId, tab.id)}
             >
-              <span className="truncate">{tab.title}</span>
+              <span className="truncate" title={tab.path}>
+                {tab.title}
+              </span>
               <button
                 className="opacity-0 group-hover:opacity-100 transition-opacity text-xs"
                 onClick={(e) => {

@@ -10,7 +10,7 @@ interface PanelFileListProps {
 }
 
 export const PanelFileList = ({ panelId }: PanelFileListProps) => {
-  const { getCurrentFileState, setFileState, loadDirectory } = useFileStore();
+  const { getCurrentFileState } = useFileStore();
   const { panels } = usePanelStore();
   const panel = panels.find((p) => p.id === panelId);
 
