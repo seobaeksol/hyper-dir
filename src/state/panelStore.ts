@@ -25,7 +25,12 @@ type PanelStore = {
   addTab: (panelId: string, path: string) => string;
   closeTab: (panelId: string, tabId: string) => void;
   switchTab: (panelId: string, tabId: string) => void;
-  updateTabTitle: (panelId: string, tabId: string, title: string) => void;
+  updateTab: (
+    panelId: string,
+    tabId: string,
+    title?: string,
+    path?: string
+  ) => void;
 };
 
 export const usePanelStore = create<PanelStore>((set, get) => ({
@@ -122,13 +127,21 @@ export const usePanelStore = create<PanelStore>((set, get) => ({
     }));
   },
 
-  updateTabTitle: (panelId, tabId, title) => {
+  updateTab: (panelId, tabId, title, path) => {
     set((state) => ({
       panels: state.panels.map((p) =>
         p.id === panelId
           ? {
               ...p,
-              tabs: p.tabs.map((t) => (t.id === tabId ? { ...t, title } : t)),
+              tabs: p.tabs.map((t) =>
+                t.id === tabId
+                  ? {
+                      ...t,
+                      title: title ? title : t.title,
+                      path: path ? path : t.path,
+                    }
+                  : t
+              ),
             }
           : p
       ),
