@@ -1,3 +1,4 @@
+import { moveDirectory } from "@/state/actions";
 import { PanelHeader } from "./PanelHeader";
 import { PanelItem } from "./PanelItem";
 import { useFileStore } from "@/state/fileStore";
@@ -78,11 +79,9 @@ export const PanelFileList = ({ panelId }: PanelFileListProps) => {
               file={file}
               selected={idx === selectedIndex}
               onClick={() => {
-                setFileState(panelId, panel.activeTabId, {
-                  selectedIndex: idx,
-                });
-                if (file.is_dir)
-                  loadDirectory(panelId, panel.activeTabId, file.path);
+                if (file.is_dir) {
+                  moveDirectory(file.path);
+                }
               }}
             />
           ))}

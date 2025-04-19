@@ -29,6 +29,11 @@ export async function moveDirectory(path: string) {
   }
 
   await fileStore.loadDirectory(activePanelId, activeTabId, path);
+  panelStore.updateTabTitle(
+    activePanelId,
+    activeTabId,
+    path.split("/").pop() || path
+  );
 }
 
 export function closeTab(panelId: string, tabId: string) {
