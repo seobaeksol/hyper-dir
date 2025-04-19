@@ -64,6 +64,10 @@ export const usePanelStore = create<PanelStore>((set, get) => ({
     const panel = get().panels.find((p) => p.id === panelId);
     if (!panel) return "";
 
+    if (!path) {
+      path = "C:\\"; // TODO: Configure default directory by platform
+    }
+
     const tabId = nanoid();
     const title = path.split(/[/\\]/).pop() || path;
     const newTab: Tab = { id: tabId, path, title, isActive: true };
@@ -90,7 +94,11 @@ export const usePanelStore = create<PanelStore>((set, get) => ({
       panels: state.panels.map((p) => {
         if (p.id !== panelId) return p;
         const newTabs = p.tabs.filter((t) => t.id !== tabId);
-        const newActive = newTabs[0]?.id || "";
+        const closedTabIndex = p.tabs.findIndex((t) => t.id === tabId);
+        const newActive =
+          closedTabIndex > 0
+            ? p.tabs[closedTabIndex - 1].id
+            : newTabs[0]?.id || "";
         return {
           ...p,
           tabs: newTabs.map((t) => ({ ...t, isActive: t.id === newActive })),
