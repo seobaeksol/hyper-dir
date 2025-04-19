@@ -3,9 +3,10 @@ import { useEffect } from "react";
 import { useFileStore } from "@/state/fileStore";
 import { useUIStore } from "@/state/uiStore";
 import { usePanelStore } from "@/state/panelStore";
+import { moveDirectory } from "@/state/actions";
 
 export function usePanelKeyboardNav(panelId: string) {
-  const { getCurrentFileState, setFileState, loadDirectory } = useFileStore();
+  const { getCurrentFileState, setFileState } = useFileStore();
   const commandPaletteVisible = useUIStore((s) => s.commandPaletteVisible);
   const { panels, activePanelId } = usePanelStore();
   const panel = panels.find((p) => p.id === panelId);
@@ -41,7 +42,7 @@ export function usePanelKeyboardNav(panelId: string) {
         e.preventDefault();
         const target = files[selectedIndex];
         if (target?.is_dir) {
-          loadDirectory(panelId, panel.activeTabId, target.path);
+          moveDirectory(target.path);
         }
       }
 
@@ -49,7 +50,7 @@ export function usePanelKeyboardNav(panelId: string) {
         e.preventDefault();
         const parent = files.find((f) => f.name === "..");
         if (parent) {
-          loadDirectory(panelId, panel.activeTabId, parent.path);
+          moveDirectory(parent.path);
         }
       }
 
@@ -62,7 +63,7 @@ export function usePanelKeyboardNav(panelId: string) {
         e.preventDefault();
         const parent = files.find((f) => f.name === "..");
         if (parent) {
-          loadDirectory(panelId, panel.activeTabId, parent.path);
+          moveDirectory(parent.path);
         }
       }
 
@@ -70,7 +71,7 @@ export function usePanelKeyboardNav(panelId: string) {
         e.preventDefault();
         const target = files[selectedIndex];
         if (target?.is_dir) {
-          loadDirectory(panelId, panel.activeTabId, target.path);
+          moveDirectory(target.path);
         }
       }
     };

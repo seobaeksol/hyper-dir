@@ -1,5 +1,6 @@
 // src/components/layout/panel/PanelHeader.tsx
-import { useFileStore, SortKey, SortOrder } from "@/state/fileStore";
+import { SortKey, SortOrder } from "@/state/fileStore";
+import { setSort } from "@/state/actions";
 
 export const PanelHeader = ({
   panelId,
@@ -12,14 +13,13 @@ export const PanelHeader = ({
   sortKey: SortKey;
   sortOrder: SortOrder;
 }) => {
-  const { setSortKey, setSortOrder } = useFileStore();
   const renderHeader = (key: typeof sortKey, label: string) => (
     <span
       className="cursor-pointer"
       onClick={() =>
         sortKey === key
-          ? setSortOrder(panelId, tabId, sortOrder === "asc" ? "desc" : "asc")
-          : setSortKey(panelId, tabId, key)
+          ? setSort(panelId, tabId, key, sortOrder === "asc" ? "desc" : "asc")
+          : setSort(panelId, tabId, key, "asc")
       }
     >
       {label} {sortKey === key ? (sortOrder === "asc" ? "▲" : "▼") : ""}

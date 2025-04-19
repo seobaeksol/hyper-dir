@@ -22,7 +22,7 @@ type PanelStore = {
   removePanel: (id: string) => void;
   switchPanel: (id: string) => void;
 
-  addTab: (panelId: string, path: string) => void;
+  addTab: (panelId: string, path: string) => string;
   closeTab: (panelId: string, tabId: string) => void;
   switchTab: (panelId: string, tabId: string) => void;
   updateTabTitle: (panelId: string, tabId: string, title: string) => void;
@@ -62,7 +62,7 @@ export const usePanelStore = create<PanelStore>((set, get) => ({
 
   addTab: (panelId, path) => {
     const panel = get().panels.find((p) => p.id === panelId);
-    if (!panel) return;
+    if (!panel) return "";
 
     const tabId = nanoid();
     const title = path.split(/[/\\]/).pop() || path;
@@ -81,6 +81,8 @@ export const usePanelStore = create<PanelStore>((set, get) => ({
           : p
       ),
     }));
+
+    return tabId;
   },
 
   closeTab: (panelId, tabId) => {

@@ -5,13 +5,14 @@ import { usePanelStore } from "@/state/panelStore";
 import { Tabbar } from "./Tabbar";
 import { PanelFileList } from "./PanelFileList";
 import { usePanelKeyboardNav } from "./usePanelKeyboardNav";
+import { moveDirectory } from "@/state/actions";
 
 interface PanelProps {
   panelId: string;
 }
 
 export const Panel = ({ panelId }: PanelProps) => {
-  const { loadDirectory } = useFileStore();
+  const { getCurrentFileState } = useFileStore();
   const { panels } = usePanelStore();
   const panel = panels.find((p) => p.id === panelId);
 
@@ -21,7 +22,10 @@ export const Panel = ({ panelId }: PanelProps) => {
     if (panel?.activeTabId) {
       const activeTab = panel.tabs.find((t) => t.id === panel.activeTabId);
       if (activeTab) {
-        loadDirectory(panelId, panel.activeTabId, activeTab.path);
+        const fileState = getCurrentFileState(panelId, panel.activeTabId);
+        if (!fileState.currentDir) {
+          moveDirectory(activeTab.path);
+        }
       }
     }
   }, [panel?.activeTabId]);
