@@ -31,7 +31,7 @@ export const PanelItem: React.FC<Props> = ({ file, selected, onClick }) => {
       <span className="w-24 text-right text-xs opacity-70">
         {formatBytes(file.size)}
       </span>
-      <span className="w-36 text-right text-xs opacity-60">
+      <span className="w-36 text-right text-xs opacity-60 whitespace-nowrap">
         {formatTimestamp(file.modified)}
       </span>
     </li>
