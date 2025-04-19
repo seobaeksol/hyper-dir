@@ -1,39 +1,41 @@
 // src/components/layout/panel/Panel.tsx
 import { useEffect } from "react";
 import { useFileStore } from "@/state/fileStore";
-import { PanelHeader } from "./PanelHeader";
-import { PanelItem } from "./PanelItem";
+import { usePanelStore } from "@/state/panelStore";
+import { Tabbar } from "./Tabbar";
+import { PanelFileList } from "./PanelFileList";
 import { usePanelKeyboardNav } from "./usePanelKeyboardNav";
+import { moveDirectory } from "@/state/actions";
 
-export const Panel = () => {
-  const { currentDir, files, selectedIndex, setSelectedIndex, loadDirectory } =
-    useFileStore();
+interface PanelProps {
+  panelId: string;
+}
 
-  usePanelKeyboardNav();
+export const Panel = ({ panelId }: PanelProps) => {
+  const { getCurrentFileState } = useFileStore();
+  const { panels } = usePanelStore();
+  const panel = panels.find((p) => p.id === panelId);
+
+  usePanelKeyboardNav(panelId);
 
   useEffect(() => {
-    loadDirectory(currentDir);
-  }, [currentDir]);
+    if (panel?.activeTabId) {
+      const activeTab = panel.tabs.find((t) => t.id === panel.activeTabId);
+      if (activeTab) {
+        const fileState = getCurrentFileState(panelId, panel.activeTabId);
+        if (!fileState.currentDir) {
+          moveDirectory(activeTab.path);
+        }
+      }
+    }
+  }, [panel?.activeTabId]);
+
+  if (!panel) return null;
 
   return (
-    <div className="w-full p-2">
-      <div className="font-semibold mb-2 text-xs opacity-70 text-white">
-        {currentDir}
-      </div>
-      <ul className="text-sm space-y-1">
-        <PanelHeader />
-        {files.map((file, idx) => (
-          <PanelItem
-            key={file.path + idx}
-            file={file}
-            selected={idx === selectedIndex}
-            onClick={() => {
-              setSelectedIndex(idx);
-              if (file.is_dir) loadDirectory(file.path);
-            }}
-          />
-        ))}
-      </ul>
+    <div className="flex flex-col h-full overflow-hidden">
+      <Tabbar panelId={panelId} />
+      <PanelFileList panelId={panelId} />
     </div>
   );
 };

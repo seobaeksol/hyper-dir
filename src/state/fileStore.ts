@@ -1,103 +1,141 @@
 import { create } from "zustand";
-import { dirname } from "@tauri-apps/api/path";
 import { FileEntry, readDirectory } from "../ipc/fs";
+import { dirname } from "@tauri-apps/api/path";
 
 export type SortKey = "name" | "file_type" | "size" | "modified";
 export type SortOrder = "asc" | "desc";
 
-interface FileState {
-  currentDir: string;
-  rawFiles: FileEntry[];
-  files: FileEntry[]; // sorted files
+type FileState = {
+  files: FileEntry[];
   selectedIndex: number;
+  currentDir: string;
   sortKey: SortKey;
   sortOrder: SortOrder;
-  setFiles: (files: FileEntry[]) => void;
-  setCurrentDir: (path: string) => void;
-  setSelectedIndex: (index: number) => void;
-  setSortKey: (key: SortKey) => void;
-  setSortOrder: (order: SortOrder) => void;
-  loadDirectory: (path: string) => Promise<void>;
-  sortFiles: () => void;
-}
+};
 
-export const useFileStore = create<FileState>((set, get) => ({
-  currentDir: ".",
-  rawFiles: [],
-  files: [],
-  selectedIndex: 0,
-  sortKey: "name",
-  sortOrder: "asc",
-  setFiles: (files) => {
-    set({ rawFiles: files });
-    get().sortFiles();
+type FileStore = {
+  // Store file states using panel ID and tab ID as keys
+  fileStates: Record<string, Record<string, FileState>>;
+
+  // Return file state for currently active panel and tab
+  getCurrentFileState: (panelId: string, tabId: string) => FileState;
+
+  // Set file state
+  setFileState: (
+    panelId: string,
+    tabId: string,
+    state: Partial<FileState>
+  ) => void;
+
+  setSortKey: (panelId: string, tabId: string, sortKey: SortKey) => void;
+  setSortOrder: (panelId: string, tabId: string, sortOrder: SortOrder) => void;
+
+  // Load directory
+  loadDirectory: (
+    panelId: string,
+    tabId: string,
+    path: string
+  ) => Promise<void>;
+};
+
+export const useFileStore = create<FileStore>((set, get) => ({
+  fileStates: {},
+
+  getCurrentFileState: (panelId, tabId) => {
+    const state = get().fileStates[panelId]?.[tabId];
+    return (
+      state || {
+        files: [],
+        selectedIndex: -1,
+        currentDir: "",
+        sortKey: "name",
+        sortOrder: "asc",
+      }
+    );
   },
-  setCurrentDir: (path) => set({ currentDir: path }),
-  setSelectedIndex: (index) => set({ selectedIndex: index }),
-  loadDirectory: async (path) => {
+
+  setFileState: (panelId, tabId, state) => {
+    set((store) => ({
+      fileStates: {
+        ...store.fileStates,
+        [panelId]: {
+          ...store.fileStates[panelId],
+          [tabId]: {
+            ...store.fileStates[panelId]?.[tabId],
+            ...state,
+          },
+        },
+      },
+    }));
+  },
+
+  setSortKey: (panelId, tabId, sortKey) => {
+    set((store) => ({
+      fileStates: {
+        ...store.fileStates,
+        [panelId]: {
+          ...store.fileStates[panelId],
+          [tabId]: {
+            ...store.fileStates[panelId]?.[tabId],
+            sortKey,
+          },
+        },
+      },
+    }));
+  },
+
+  setSortOrder: (panelId, tabId, sortOrder) => {
+    set((store) => ({
+      fileStates: {
+        ...store.fileStates,
+        [panelId]: {
+          ...store.fileStates[panelId],
+          [tabId]: {
+            ...store.fileStates[panelId]?.[tabId],
+            sortOrder,
+          },
+        },
+      },
+    }));
+  },
+
+  loadDirectory: async (panelId, tabId, path) => {
     try {
-      const entries = await readDirectory(path);
-      const parentPath = await dirname(path);
+      const files = await readDirectory(path);
 
-      const parentEntry = {
-        name: "..",
-        path: parentPath,
-        is_dir: true,
-        size: 0,
-        modified: 0,
-        file_type: "folder",
-      };
+      let parentEntry: FileEntry | null = null;
+      try {
+        const parentPath = await dirname(path);
 
-      entries.unshift(parentEntry);
-
-      set({ currentDir: path, selectedIndex: 0 });
-      get().setFiles(entries);
-    } catch (error) {
-      console.error(error);
-    }
-  },
-  setSortKey: (key) => {
-    set((state) => {
-      const isSameKey = state.sortKey === key;
-      const newOrder = isSameKey && state.sortOrder === "asc" ? "desc" : "asc";
-      return {
-        sortKey: key,
-        sortOrder: newOrder,
-      };
-    });
-    get().sortFiles();
-  },
-  setSortOrder: (order) => {
-    set({ sortOrder: order });
-    get().sortFiles();
-  },
-  sortFiles: () => {
-    const { rawFiles, sortKey, sortOrder } = get();
-
-    const sortedFiles = rawFiles.sort((a, b) => {
-      // 1. ".." First
-      if (a.name === "..") return -1;
-      if (b.name === "..") return 1;
-
-      // 2. Directory First
-      if (sortKey !== "file_type" && a.is_dir && !b.is_dir) return -1;
-      if (sortKey !== "file_type" && !a.is_dir && b.is_dir) return 1;
-
-      // 3. Sort by key
-      const va = a[sortKey] ?? 0;
-      const vb = b[sortKey] ?? 0;
-
-      if (typeof va === "string" && typeof vb === "string") {
-        return sortOrder === "asc"
-          ? va.localeCompare(vb)
-          : vb.localeCompare(va);
-      } else if (typeof va === "number" && typeof vb === "number") {
-        return sortOrder === "asc" ? va - vb : vb - va;
+        parentEntry = {
+          name: "..",
+          path: parentPath,
+          is_dir: true,
+          size: 0,
+          modified: 0,
+          file_type: "folder",
+        };
+      } catch (error) {
+        console.error("Failed to get parent directory:", error);
       }
 
-      return 0;
-    });
-
-    set({ files: sortedFiles });
+      set((store) => ({
+        fileStates: {
+          ...store.fileStates,
+          [panelId]: {
+            ...store.fileStates[panelId],
+            [tabId]: {
+              files: parentEntry ? [parentEntry, ...files] : files,
+              selectedIndex: -1,
+              currentDir: path,
+              sortKey: "name",
+              sortOrder: "asc",
+            },
+          },
+        },
+      }));
+    } catch (error) {
+      console.error("Failed to load directory:", error);
+    }
   },
 }));
