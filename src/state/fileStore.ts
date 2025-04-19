@@ -30,7 +30,6 @@ type FileStore = {
 
   setSortKey: (panelId: string, tabId: string, sortKey: SortKey) => void;
   setSortOrder: (panelId: string, tabId: string, sortOrder: SortOrder) => void;
-  sortFiles: (panelId: string, tabId: string) => void;
 
   // Load directory
   loadDirectory: (
@@ -84,7 +83,6 @@ export const useFileStore = create<FileStore>((set, get) => ({
         },
       },
     }));
-    get().sortFiles(panelId, tabId);
   },
 
   setSortOrder: (panelId, tabId, sortOrder) => {
@@ -96,49 +94,6 @@ export const useFileStore = create<FileStore>((set, get) => ({
           [tabId]: {
             ...store.fileStates[panelId]?.[tabId],
             sortOrder,
-          },
-        },
-      },
-    }));
-    get().sortFiles(panelId, tabId);
-  },
-
-  sortFiles: (panelId, tabId) => {
-    const { fileStates } = get();
-    const { files, sortKey, sortOrder } = fileStates[panelId]?.[tabId];
-
-    const sortedFiles = files.sort((a, b) => {
-      // 1. ".." First
-      if (a.name === "..") return -1;
-      if (b.name === "..") return 1;
-
-      // 2. Directory First
-      if (sortKey !== "file_type" && a.is_dir && !b.is_dir) return -1;
-      if (sortKey !== "file_type" && !a.is_dir && b.is_dir) return 1;
-
-      // 3. Sort by key
-      const va = a[sortKey] ?? 0;
-      const vb = b[sortKey] ?? 0;
-
-      if (typeof va === "string" && typeof vb === "string") {
-        return sortOrder === "asc"
-          ? va.localeCompare(vb)
-          : vb.localeCompare(va);
-      } else if (typeof va === "number" && typeof vb === "number") {
-        return sortOrder === "asc" ? va - vb : vb - va;
-      }
-
-      return 0;
-    });
-
-    set((store) => ({
-      fileStates: {
-        ...store.fileStates,
-        [panelId]: {
-          ...store.fileStates[panelId],
-          [tabId]: {
-            ...store.fileStates[panelId]?.[tabId],
-            files: sortedFiles,
           },
         },
       },
