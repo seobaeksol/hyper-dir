@@ -4,6 +4,8 @@ import { create } from "zustand";
 export interface Tab {
   id: string;
   path: string;
+  title: string;
+  isActive: boolean;
 }
 
 interface TabState {
@@ -28,7 +30,9 @@ export const useTabStore = create<TabState>((set) => ({
       const isClosingActive = state.activeTabId === id;
       return {
         tabs: newTabs,
-        activeTabId: isClosingActive ? newTabs[0]?.id ?? null : state.activeTabId,
+        activeTabId: isClosingActive
+          ? newTabs[0]?.id ?? null
+          : state.activeTabId,
       };
     }),
   setActiveTab: (id) => set({ activeTabId: id }),

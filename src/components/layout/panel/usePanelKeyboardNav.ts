@@ -2,16 +2,19 @@
 import { useEffect } from "react";
 import { useFileStore } from "@/state/fileStore";
 import { useUIStore } from "@/state/uiStore";
+import { usePanelStore } from "@/state/panelStore";
 
-export function usePanelKeyboardNav() {
-  const files = useFileStore((s) => s.files);
-  const selectedIndex = useFileStore((s) => s.selectedIndex);
-  const setSelectedIndex = useFileStore((s) => s.setSelectedIndex);
-  const loadDirectory = useFileStore((s) => s.loadDirectory);
+export function usePanelKeyboardNav(panelId: string) {
+  const { getCurrentFileState, setFileState, loadDirectory } = useFileStore();
   const commandPaletteVisible = useUIStore((s) => s.commandPaletteVisible);
+  const { panels, activePanelId } = usePanelStore();
+  const panel = panels.find((p) => p.id === panelId);
 
   useEffect(() => {
-    if (commandPaletteVisible) return;
+    if (commandPaletteVisible || !panel || panel.id !== activePanelId) return;
+
+    const fileState = getCurrentFileState(panelId, panel.activeTabId);
+    const { files, selectedIndex } = fileState;
 
     const handler = (e: KeyboardEvent) => {
       const isAlt = e.altKey;
@@ -19,24 +22,26 @@ export function usePanelKeyboardNav() {
       if (!isAlt && e.key === "ArrowUp") {
         e.preventDefault();
         if (files.length > 0) {
-          setSelectedIndex((selectedIndex - 1 + files.length) % files.length);
+          setFileState(panelId, panel.activeTabId, {
+            selectedIndex: (selectedIndex - 1 + files.length) % files.length,
+          });
         }
       }
 
       if (!isAlt && e.key === "ArrowDown") {
         e.preventDefault();
         if (files.length > 0) {
-          setSelectedIndex((selectedIndex + 1) % files.length);
+          setFileState(panelId, panel.activeTabId, {
+            selectedIndex: (selectedIndex + 1) % files.length,
+          });
         }
       }
 
       if (!isAlt && e.key === "Enter") {
         e.preventDefault();
         const target = files[selectedIndex];
-        console.log(files);
-        console.log(target);
         if (target?.is_dir) {
-          loadDirectory(target.path);
+          loadDirectory(panelId, panel.activeTabId, target.path);
         }
       }
 
@@ -44,20 +49,20 @@ export function usePanelKeyboardNav() {
         e.preventDefault();
         const parent = files.find((f) => f.name === "..");
         if (parent) {
-          loadDirectory(parent.path);
+          loadDirectory(panelId, panel.activeTabId, parent.path);
         }
       }
 
       if (!isAlt && e.key === "Escape") {
         e.preventDefault();
-        setSelectedIndex(-1);
+        setFileState(panelId, panel.activeTabId, { selectedIndex: -1 });
       }
 
       if (isAlt && e.key === "ArrowUp") {
         e.preventDefault();
         const parent = files.find((f) => f.name === "..");
         if (parent) {
-          loadDirectory(parent.path);
+          loadDirectory(panelId, panel.activeTabId, parent.path);
         }
       }
 
@@ -65,12 +70,12 @@ export function usePanelKeyboardNav() {
         e.preventDefault();
         const target = files[selectedIndex];
         if (target?.is_dir) {
-          loadDirectory(target.path);
+          loadDirectory(panelId, panel.activeTabId, target.path);
         }
       }
     };
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [files, selectedIndex, commandPaletteVisible]);
+  }, [commandPaletteVisible, panel, activePanelId]);
 }
