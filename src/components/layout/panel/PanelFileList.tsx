@@ -2,8 +2,8 @@ import { moveDirectory } from "@/state/actions";
 import { PanelHeader } from "./PanelHeader";
 import { PanelItem } from "./PanelItem";
 import { useFileStore } from "@/state/fileStore";
-import { usePanelStore } from "@/state/panelStore";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useTabStore } from "@/state/tabStore";
 
 interface PanelFileListProps {
   panelId: string;
@@ -11,12 +11,18 @@ interface PanelFileListProps {
 
 export const PanelFileList = ({ panelId }: PanelFileListProps) => {
   const { getCurrentFileState } = useFileStore();
-  const { panels } = usePanelStore();
-  const panel = panels.find((p) => p.id === panelId);
+  const { getActiveTab } = useTabStore();
+  const activeTab = getActiveTab(panelId);
 
-  if (!panel) return null;
+  useEffect(() => {
+    if (activeTab) {
+      moveDirectory(activeTab.path);
+    }
+  }, []);
 
-  const fileState = getCurrentFileState(panelId, panel.activeTabId);
+  if (!activeTab) return null;
+
+  const fileState = getCurrentFileState(panelId, activeTab.id);
   const { currentDir, files, selectedIndex, sortKey, sortOrder } = fileState;
 
   // Separate parent directory entry and other files
@@ -64,7 +70,7 @@ export const PanelFileList = ({ panelId }: PanelFileListProps) => {
           <ul className="text-sm min-w-max">
             <PanelHeader
               panelId={panelId}
-              tabId={panel.activeTabId}
+              tabId={activeTab.id}
               sortKey={sortKey}
               sortOrder={sortOrder}
             />
