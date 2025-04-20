@@ -7,22 +7,23 @@ import { useTabStore } from "@/state/tabStore";
 
 interface PanelFileListProps {
   panelId: string;
+  tabId: string;
 }
 
-export const PanelFileList = ({ panelId }: PanelFileListProps) => {
+export const PanelFileList = ({ panelId, tabId }: PanelFileListProps) => {
   const { getCurrentFileState } = useFileStore();
-  const { getActiveTab } = useTabStore();
-  const activeTab = getActiveTab(panelId);
+  const { getTabById } = useTabStore();
+  const tab = getTabById(panelId, tabId);
 
   useEffect(() => {
-    if (activeTab) {
-      moveDirectory(activeTab.path);
+    if (tab) {
+      moveDirectory(tabId, tab.path);
     }
   }, []);
 
-  if (!activeTab) return null;
+  if (!tab) return null;
 
-  const fileState = getCurrentFileState(panelId, activeTab.id);
+  const fileState = getCurrentFileState(panelId, tab.id);
   const { currentDir, files, selectedIndex, sortKey, sortOrder } = fileState;
 
   // Separate parent directory entry and other files
@@ -70,7 +71,7 @@ export const PanelFileList = ({ panelId }: PanelFileListProps) => {
           <ul className="text-sm min-w-max">
             <PanelHeader
               panelId={panelId}
-              tabId={activeTab.id}
+              tabId={tab.id}
               sortKey={sortKey}
               sortOrder={sortOrder}
             />
@@ -86,7 +87,7 @@ export const PanelFileList = ({ panelId }: PanelFileListProps) => {
               selected={idx === selectedIndex}
               onClick={() => {
                 if (file.is_dir) {
-                  moveDirectory(file.path);
+                  moveDirectory(tabId, file.path);
                 }
               }}
             />

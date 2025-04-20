@@ -9,7 +9,7 @@ export type Tab = {
 };
 
 type TabStore = {
-  tabs: Record<string, Tab[]>;
+  tabs: Record<string, Tab[]>; // panelId -> tabs
 
   addTab: (panelId: string, path: string) => string;
   closeTab: (panelId: string, tabId: string) => void;
@@ -22,6 +22,7 @@ type TabStore = {
   ) => void;
   getTabsByPanelId: (panelId: string) => Tab[];
   getActiveTab: (panelId: string) => Tab | undefined;
+  getTabById: (panelId: string, tabId: string) => Tab | undefined;
 };
 
 export const useTabStore = create<TabStore>((set, get) => ({
@@ -108,5 +109,9 @@ export const useTabStore = create<TabStore>((set, get) => ({
 
   getActiveTab: (panelId) => {
     return get().tabs[panelId]?.find((t) => t.isActive);
+  },
+
+  getTabById: (panelId, tabId) => {
+    return get().tabs[panelId]?.find((t) => t.id === tabId);
   },
 }));
