@@ -1,7 +1,7 @@
 import { usePanelStore } from "./panelStore";
 import { SortKey, SortOrder, useFileStore } from "./fileStore";
 import { useTabStore } from "./tabStore";
-
+import { registerDefaultCommands } from "../commands/registerDefaultCommands";
 export function getNextAvailablePosition(): { row: number; column: number } {
   const state = usePanelStore.getState();
   const positions = state.panels.map(
@@ -80,4 +80,22 @@ export function setSort(
   const fileStore = useFileStore.getState();
   fileStore.setSortKey(panelId, tabId, sortKey);
   fileStore.setSortOrder(panelId, tabId, sortOrder);
+}
+
+let isInitialized = false;
+
+export function initializeApp() {
+  if (isInitialized) {
+    return;
+  }
+
+  const panelStore = usePanelStore.getState();
+
+  if (panelStore.panels.length === 0) {
+    panelStore.addPanel({ row: 0, column: 0 });
+  }
+
+  registerDefaultCommands();
+
+  isInitialized = true;
 }
