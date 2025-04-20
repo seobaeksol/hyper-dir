@@ -1,9 +1,10 @@
 import { usePanelStore } from "./panelStore";
 import { SortKey, SortOrder, useFileStore } from "./fileStore";
-
+import { useTabStore } from "./tabStore";
 export async function openTab(path: string) {
   const panelStore = usePanelStore.getState();
   const fileStore = useFileStore.getState();
+  const tabStore = useTabStore.getState();
   const activePanelId = panelStore.activePanelId;
 
   if (!activePanelId) {
@@ -11,17 +12,15 @@ export async function openTab(path: string) {
     return;
   }
 
-  const tabId = panelStore.addTab(activePanelId, path);
+  const tabId = tabStore.addTab(activePanelId, path);
   await fileStore.loadDirectory(activePanelId, tabId, path);
 }
 
 export async function moveDirectory(path: string) {
-  const panelStore = usePanelStore.getState();
+  const tabStore = useTabStore.getState();
   const fileStore = useFileStore.getState();
-  const activePanelId = panelStore.activePanelId;
-  const activeTabId = panelStore.panels.find(
-    (p) => p.id === activePanelId
-  )?.activeTabId;
+  const activePanelId = usePanelStore.getState().activePanelId;
+  const activeTabId = tabStore.getActiveTab(activePanelId)?.id;
 
   if (!activePanelId || !activeTabId) {
     console.error("No active panel or tab found");
@@ -29,7 +28,7 @@ export async function moveDirectory(path: string) {
   }
 
   await fileStore.loadDirectory(activePanelId, activeTabId, path);
-  panelStore.updateTab(
+  tabStore.updateTab(
     activePanelId,
     activeTabId,
     path.split("\\").pop() || path,
@@ -38,10 +37,10 @@ export async function moveDirectory(path: string) {
 }
 
 export function closeTab(panelId: string, tabId: string) {
-  const panelStore = usePanelStore.getState();
+  const tabStore = useTabStore.getState();
   const fileStore = useFileStore.getState();
 
-  panelStore.closeTab(panelId, tabId);
+  tabStore.closeTab(panelId, tabId);
   // Clean up file state for the closed tab
   fileStore.setFileState(panelId, tabId, {
     files: [],
@@ -51,8 +50,8 @@ export function closeTab(panelId: string, tabId: string) {
 }
 
 export function switchTab(panelId: string, tabId: string) {
-  const panelStore = usePanelStore.getState();
-  panelStore.switchTab(panelId, tabId);
+  const tabStore = useTabStore.getState();
+  tabStore.switchTab(panelId, tabId);
 }
 
 export function setSort(
