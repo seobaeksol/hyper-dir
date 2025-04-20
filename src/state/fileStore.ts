@@ -104,7 +104,9 @@ export const useFileStore = create<FileStore>((set, get) => ({
       const files = await readDirectory(path);
 
       let parentEntry: FileEntry | null = null;
-      try {
+
+      // Only add parent directory entry if not at root
+      if (path !== "C:\\") {
         const parentPath = await dirname(path);
 
         parentEntry = {
@@ -115,8 +117,6 @@ export const useFileStore = create<FileStore>((set, get) => ({
           modified: 0,
           file_type: "folder",
         };
-      } catch (error) {
-        console.error("Failed to get parent directory:", error);
       }
 
       set((store) => ({
