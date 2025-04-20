@@ -1,13 +1,23 @@
 // src/components/CommandPalette.tsx
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 import { useUIStore } from "@/state/uiStore";
 import { useCommandStore } from "@/state/commandStore";
 import { useFileStore } from "@/state/fileStore";
+import { usePanelStore } from "@/state/panelStore";
+import { useTabStore } from "@/state/tabStore";
 
 export const CommandPalette: React.FC = () => {
   const visible = useUIStore((s) => s.commandPaletteVisible);
   const setVisible = useUIStore((s) => s.setCommandPaletteVisible);
   const inputRef = useRef<HTMLInputElement>(null);
+  const activePanelId = usePanelStore((s) => s.activePanelId);
+  const activeTabId = useTabStore((s) => s.getActiveTab(activePanelId)?.id);
+  const fileState = useFileStore((s) =>
+    activeTabId && activePanelId
+      ? s.fileStates[activePanelId]?.[activeTabId]
+      : null
+  );
+  const fileList = useMemo(() => fileState?.files || [], [fileState]);
 
   const {
     query,
@@ -42,10 +52,10 @@ export const CommandPalette: React.FC = () => {
     };
 
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [visible]);
-
-  const fileList = useFileStore((s) => s.files);
+    return () => {
+      window.removeEventListener("keydown", handler);
+    };
+  }, [visible, setVisible, selectNext, selectPrev, executeSelected]);
 
   if (!visible) return null;
 

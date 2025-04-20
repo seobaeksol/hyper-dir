@@ -17,7 +17,7 @@ function App() {
   useEffect(() => {
     registerDefaultCommands();
     if (panels.length === 0) {
-      addPanel();
+      addPanel({ row: 0, column: 0 });
     }
   }, []);
 

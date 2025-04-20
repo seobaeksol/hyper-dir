@@ -5,31 +5,38 @@ import { useTabStore } from "./tabStore";
 type Panel = {
   id: string;
   activeTabId: string;
+  position: {
+    row: number;
+    column: number;
+  };
 };
 
 type PanelStore = {
   panels: Panel[];
   activePanelId: string;
 
-  addPanel: () => void;
+  addPanel: (
+    position: { row: number; column: number },
+    initialDir?: string
+  ) => void;
   removePanel: (id: string) => void;
-  switchPanel: (id: string) => void;
+  setActivePanel: (id: string) => void;
+  getPanelById: (id: string) => Panel | undefined;
 };
 
 export const usePanelStore = create<PanelStore>((set, get) => ({
   panels: [],
   activePanelId: "",
 
-  addPanel: () => {
+  addPanel: (position, initialDir = "C:\\") => {
     const panelId = nanoid();
-    const home = "C:\\"; // TODO: Configure default directory by platform
-
     const tabStore = useTabStore.getState();
-    const tabId = tabStore.addTab(panelId, home);
+    const tabId = tabStore.addTab(panelId, initialDir);
 
     const newPanel: Panel = {
       id: panelId,
       activeTabId: tabId,
+      position,
     };
 
     set((state) => ({
@@ -55,5 +62,7 @@ export const usePanelStore = create<PanelStore>((set, get) => ({
     });
   },
 
-  switchPanel: (id) => set({ activePanelId: id }),
+  setActivePanel: (id) => set({ activePanelId: id }),
+
+  getPanelById: (id) => get().panels.find((p) => p.id === id),
 }));

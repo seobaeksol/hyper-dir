@@ -1,6 +1,24 @@
 import { usePanelStore } from "./panelStore";
 import { SortKey, SortOrder, useFileStore } from "./fileStore";
 import { useTabStore } from "./tabStore";
+
+export function getNextAvailablePosition(): { row: number; column: number } {
+  const state = usePanelStore.getState();
+  const positions = state.panels.map(
+    (p) => `${p.position.row},${p.position.column}`
+  );
+
+  // Simple row-priority placement
+  for (let row = 0; row < 10; row++) {
+    for (let col = 0; col < 10; col++) {
+      if (!positions.includes(`${row},${col}`)) {
+        return { row, column: col };
+      }
+    }
+  }
+  return { row: 0, column: 0 }; // fallback
+}
+
 export async function openTab(path: string) {
   const panelStore = usePanelStore.getState();
   const fileStore = useFileStore.getState();
