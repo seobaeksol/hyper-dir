@@ -9,7 +9,7 @@ interface PanelProps {
 }
 
 export const Panel = ({ panelId }: PanelProps) => {
-  const { panels } = usePanelStore();
+  const { panels, setActivePanel } = usePanelStore();
   const panel = panels.find((p) => p.id === panelId);
   const { getActiveTab } = useTabStore();
   const activeTab = getActiveTab(panelId);
@@ -19,7 +19,10 @@ export const Panel = ({ panelId }: PanelProps) => {
   if (!panel) return null;
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div
+      className="flex flex-col h-full overflow-hidden"
+      onClick={() => setActivePanel(panelId)}
+    >
       <Tabbar panelId={panelId} />
       {activeTab && <PanelFileList panelId={panelId} tabId={activeTab.id} />}
     </div>
