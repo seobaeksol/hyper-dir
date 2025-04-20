@@ -7,18 +7,13 @@ import { useHotkeys } from "./hooks/useHotkeys";
 import { CommandPalette } from "./components/CommandPalette";
 import { registerDefaultCommands } from "./commands/registerDefaultCommands";
 import { useEffect } from "react";
-import { usePanelStore } from "./state/panelStore";
 import { PanelWrapper } from "./components/layout/panel/PanelWrapper";
 
 function App() {
   useHotkeys();
-  const { panels, addPanel } = usePanelStore();
 
   useEffect(() => {
     registerDefaultCommands();
-    if (panels.length === 0) {
-      addPanel({ row: 0, column: 0 });
-    }
   }, []);
 
   return (
