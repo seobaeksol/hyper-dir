@@ -42,7 +42,7 @@ export function usePanelKeyboardNav(panelId: string) {
         e.preventDefault();
         const target = files[selectedIndex];
         if (target?.is_dir) {
-          moveDirectory(target.path);
+          moveDirectory(panel.activeTabId, target.path);
         }
       }
 
@@ -50,7 +50,7 @@ export function usePanelKeyboardNav(panelId: string) {
         e.preventDefault();
         const parent = files.find((f) => f.name === "..");
         if (parent) {
-          moveDirectory(parent.path);
+          moveDirectory(panel.activeTabId, parent.path);
         }
       }
 
@@ -63,7 +63,7 @@ export function usePanelKeyboardNav(panelId: string) {
         e.preventDefault();
         const parent = files.find((f) => f.name === "..");
         if (parent) {
-          moveDirectory(parent.path);
+          moveDirectory(panel.activeTabId, parent.path);
         }
       }
 
@@ -71,7 +71,7 @@ export function usePanelKeyboardNav(panelId: string) {
         e.preventDefault();
         const target = files[selectedIndex];
         if (target?.is_dir) {
-          moveDirectory(target.path);
+          moveDirectory(panel.activeTabId, target.path);
         }
       }
     };

@@ -2,6 +2,7 @@ import { usePanelStore } from "@/state/panelStore";
 import { Tabbar } from "./Tabbar";
 import { PanelFileList } from "./PanelFileList";
 import { usePanelKeyboardNav } from "./usePanelKeyboardNav";
+import { useTabStore } from "@/state/tabStore";
 
 interface PanelProps {
   panelId: string;
@@ -10,6 +11,8 @@ interface PanelProps {
 export const Panel = ({ panelId }: PanelProps) => {
   const { panels } = usePanelStore();
   const panel = panels.find((p) => p.id === panelId);
+  const { getActiveTab } = useTabStore();
+  const activeTab = getActiveTab(panelId);
 
   usePanelKeyboardNav(panelId);
 
@@ -18,7 +21,7 @@ export const Panel = ({ panelId }: PanelProps) => {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <Tabbar panelId={panelId} />
-      <PanelFileList panelId={panelId} />
+      {activeTab && <PanelFileList panelId={panelId} tabId={activeTab.id} />}
     </div>
   );
 };

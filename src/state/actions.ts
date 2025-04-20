@@ -34,21 +34,20 @@ export async function openTab(path: string) {
   await fileStore.loadDirectory(activePanelId, tabId, path);
 }
 
-export async function moveDirectory(path: string) {
+export async function moveDirectory(tabId: string, path: string) {
   const tabStore = useTabStore.getState();
   const fileStore = useFileStore.getState();
   const activePanelId = usePanelStore.getState().activePanelId;
-  const activeTabId = tabStore.getActiveTab(activePanelId)?.id;
 
-  if (!activePanelId || !activeTabId) {
+  if (!activePanelId || !tabId) {
     console.error("No active panel or tab found");
     return;
   }
 
-  await fileStore.loadDirectory(activePanelId, activeTabId, path);
+  await fileStore.loadDirectory(activePanelId, tabId, path);
   tabStore.updateTab(
     activePanelId,
-    activeTabId,
+    tabId,
     path.split("\\").pop() || path,
     path
   );
