@@ -44,7 +44,7 @@ Panel
 | Ctrl + T        |       | Create new tab                     |
 | Ctrl + W        |       | Close current tab                  |
 | Ctrl + Tab      |       | Move to next tab                   |
-| Alt + [1~9]     |       | Jump to specific tab               |
+| Ctrl + [1~9]    |       | Jump to specific tab               |
 
 ## 4. ⚙️ Interaction Design
 
