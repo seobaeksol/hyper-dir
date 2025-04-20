@@ -9,8 +9,8 @@ export const PanelWrapper = () => {
       {panels.map((panel) => (
         <div
           key={panel.id}
-          className={`flex flex-col flex-1 overflow-hidden ${
-            panel.id === activePanelId ? "" : "hidden"
+          className={`flex flex-col flex-1 overflow-hidden transition-all duration-200 ${
+            panel.id === activePanelId ? "bg-zinc-900/50" : "bg-zinc-900/20"
           }`}
         >
           <Panel panelId={panel.id} />
