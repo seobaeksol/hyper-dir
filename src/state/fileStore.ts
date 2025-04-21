@@ -5,7 +5,7 @@ import { dirname } from "@tauri-apps/api/path";
 export type SortKey = "name" | "file_type" | "size" | "modified";
 export type SortOrder = "asc" | "desc";
 
-type FileState = {
+interface FileState {
   files: FileEntry[];
   selectedIndex: number;
   currentDir: string;
@@ -13,7 +13,7 @@ type FileState = {
   sortOrder: SortOrder;
 };
 
-type FileStore = {
+interface FileStore {
   // Store file states using panel ID and tab ID as keys
   fileStates: Record<string, Record<string, FileState>>;
 
