@@ -1,14 +1,14 @@
 import { create } from "zustand";
 import { nanoid } from "nanoid";
 
-export type Tab = {
+export interface Tab { 
   id: string;
   path: string;
   title: string;
   isActive: boolean;
 };
 
-type TabStore = {
+interface TabStore { 
   tabs: Record<string, Tab[]>; // panelId -> tabs
 
   addTab: (panelId: string, path: string) => string;

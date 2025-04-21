@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { nanoid } from "nanoid";
 import { useTabStore } from "./tabStore";
 
-type Panel = {
+interface Panel { 
   id: string;
   activeTabId: string;
   position: {
@@ -11,7 +11,7 @@ type Panel = {
   };
 };
 
-type PanelStore = {
+interface PanelStore { 
   panels: Panel[];
   activePanelId: string;
 
