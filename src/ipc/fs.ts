@@ -13,3 +13,15 @@ export interface FileEntry {
 export async function readDirectory(path: string): Promise<FileEntry[]> {
   return await invoke(IPC_COMMANDS.READ_DIRECTORY, { path });
 }
+
+export async function createDirectory(path: string): Promise<void> {
+  return await invoke(IPC_COMMANDS.CREATE_DIR, { path });
+}
+
+export async function removeFileOrDirectory(path: string): Promise<void> {
+  return await invoke(IPC_COMMANDS.REMOVE_FILE_OR_DIRECTORY, { path });
+}
+
+export async function renameFileOrDirectory(src: string, dst: string): Promise<void> {
+  return await invoke(IPC_COMMANDS.RENAME_FILE_OR_DIRECTORY, { src, dst });
+}

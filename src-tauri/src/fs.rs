@@ -48,3 +48,24 @@ pub fn read_directory(path: String) -> Result<Vec<FileEntry>, String> {
 
     Ok(entries)
 }
+
+#[command]
+pub fn create_directory(path: String) -> Result<(), String> {
+    fs::create_dir_all(PathBuf::from(&path)).map_err(|e| e.to_string())
+}
+
+#[command]
+pub fn remove_file_or_directory(path: String) -> Result<(), String> {
+    let pb = PathBuf::from(&path);
+    if pb.is_dir() {
+        fs::remove_dir_all(&pb).map_err(|e| e.to_string())
+    } else {
+        fs::remove_file(&pb).map_err(|e| e.to_string())
+    }
+}
+
+#[command]
+pub fn rename_file_or_directory(src: String, dst: String) -> Result<(), String> {
+    fs::rename(PathBuf::from(&src), PathBuf::from(&dst)).map_err(|e| e.to_string())
+}
+

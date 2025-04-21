@@ -11,6 +11,13 @@ export interface Command {
   action: () => void;
 }
 
+interface CommandPrompt {
+  message: string;
+  initialValue?: string;
+  onSubmit: (value: string) => void;
+  onCancel?: () => void;
+}
+
 interface CommandState {
   query: string;
   commands: Command[];
@@ -25,6 +32,10 @@ interface CommandState {
   selectPrev: () => void;
   executeSelected: () => void;
   getMode: () => CommandPaletteMode;
+  prompt: CommandPrompt | null;
+  startPrompt: (prompt: CommandPrompt) => void;
+  resolvePrompt: (value: string) => void;
+  cancelPrompt: () => void;
 }
 
 export const useCommandStore = create<CommandState>((set, get) => ({
@@ -32,6 +43,7 @@ export const useCommandStore = create<CommandState>((set, get) => ({
   query: "",
   commands: [],
   selectedIndex: 0,
+  prompt: null,
 
   setQuery: (q) => set({ query: q, selectedIndex: 0 }),
 
@@ -76,5 +88,19 @@ export const useCommandStore = create<CommandState>((set, get) => ({
   toggleCommandPalette: (mode: CommandPaletteMode) => {
     set({ query: mode === "command" ? "> " : "" });
     useUIStore.getState().toggleCommandPalette();
+  },
+
+  startPrompt: (prompt) => set({ prompt }),
+  resolvePrompt: (value) => {
+    const p = get().prompt;
+    if (p) {
+      p.onSubmit(value);
+      set({ prompt: null });
+    }
+  },
+  cancelPrompt: () => {
+    const p = get().prompt;
+    if (p && p.onCancel) p.onCancel();
+    set({ prompt: null });
   },
 }));
