@@ -62,7 +62,7 @@ export const PanelFileList = ({ panelId, tabId }: PanelFileListProps) => {
   }, [otherFiles, parentEntry, sortKey, sortOrder]);
 
   return (
-    <div className="flex flex-col h-[calc(100%-2rem)]">
+    <div className="flex flex-col h-[calc(100%-2rem)]" data-testid="panelfilelist">
       <div className="p-2">
         <div className="font-semibold mb-2 text-xs opacity-70 text-white">
           {currentDir}
