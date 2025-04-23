@@ -1,7 +1,7 @@
 import { moveDirectory } from "@/state/actions";
 import { PanelHeader } from "./PanelHeader";
 import { PanelItem } from "./PanelItem";
-import { useFileStore } from "@/state/fileStore";
+import { FileState, useFileStore } from "@/state/fileStore";
 import { useEffect, useMemo } from "react";
 import { useTabStore } from "@/state/tabStore";
 
@@ -21,9 +21,15 @@ export const PanelFileList = ({ panelId, tabId }: PanelFileListProps) => {
     }
   }, []);
 
-  if (!tab) return null;
-
-  const fileState = getCurrentFileState(panelId, tab.id);
+  const fileState = tab
+    ? getCurrentFileState(panelId, tab.id)
+    : ({
+        currentDir: "",
+        files: [],
+        selectedIndex: -1,
+        sortKey: "name",
+        sortOrder: "asc",
+      } as FileState);
   const { currentDir, files, selectedIndex, sortKey, sortOrder } = fileState;
 
   // Separate parent directory entry and other files
@@ -61,8 +67,27 @@ export const PanelFileList = ({ panelId, tabId }: PanelFileListProps) => {
     return parentEntry ? [parentEntry, ...sorted] : sorted;
   }, [otherFiles, parentEntry, sortKey, sortOrder]);
 
+  // Render nothing or a fallback if tab is undefined
+  if (!tab) {
+    return (
+      <div
+        className="flex flex-col h-[calc(100%-2rem)]"
+        data-testid="panelfilelist"
+      >
+        <div className="p-2">
+          <div className="font-semibold mb-2 text-xs opacity-70 text-white">
+            No directory selected
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-[calc(100%-2rem)]" data-testid="panelfilelist">
+    <div
+      className="flex flex-col h-[calc(100%-2rem)]"
+      data-testid="panelfilelist"
+    >
       <div className="p-2">
         <div className="font-semibold mb-2 text-xs opacity-70 text-white">
           {currentDir}
