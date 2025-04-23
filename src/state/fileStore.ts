@@ -1,17 +1,17 @@
 import { create } from "zustand";
-import { FileEntry, readDirectory } from "../ipc/fs";
+import { FileEntry, readDirectory } from "@/ipc/fs";
 import { dirname } from "@tauri-apps/api/path";
 
 export type SortKey = "name" | "file_type" | "size" | "modified";
 export type SortOrder = "asc" | "desc";
 
-interface FileState {
+export interface FileState {
   files: FileEntry[];
   selectedIndex: number;
   currentDir: string;
   sortKey: SortKey;
   sortOrder: SortOrder;
-};
+}
 
 interface FileStore {
   // Store file states using panel ID and tab ID as keys
@@ -36,7 +36,7 @@ interface FileStore {
     tabId: string,
     path: string
   ) => Promise<void>;
-};
+}
 
 export const useFileStore = create<FileStore>((set, get) => ({
   fileStates: {},
