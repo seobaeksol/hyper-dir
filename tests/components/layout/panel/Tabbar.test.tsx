@@ -28,7 +28,7 @@ vi.mock("@tauri-apps/api/path", () => ({
 }));
 
 vi.mock("@tauri-apps/api/core", () => ({
-  invoke: vi.fn(async (cmd, args) => {
+  invoke: vi.fn(async (cmd, _args) => {
     switch (cmd) {
       case IPC_COMMANDS.READ_DIRECTORY:
         return [

@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { PanelWrapper } from "@/components/layout/panel/PanelWrapper";
 import { usePanelStore } from "@/state/panelStore";
