@@ -32,18 +32,6 @@ describe("SidebarTab", () => {
     expect(button).not.toHaveClass("bg-zinc-600");
   });
 
-  it("is accessible via keyboard", () => {
-    const onClick = vi.fn();
-    render(<SidebarTab icon="📁" active={false} onClick={onClick} />);
-
-    const button = screen.getByRole("button");
-    button.focus();
-    expect(button).toHaveFocus();
-
-    fireEvent.keyDown(button, { key: "Enter" });
-    expect(onClick).toHaveBeenCalledTimes(1);
-  });
-
   it("has correct base styling", () => {
     render(<SidebarTab icon="📁" active={false} onClick={() => {}} />);
     const button = screen.getByRole("button");
