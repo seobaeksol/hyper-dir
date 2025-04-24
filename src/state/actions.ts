@@ -82,13 +82,7 @@ export function setSort(
   fileStore.setSortOrder(panelId, tabId, sortOrder);
 }
 
-let isInitialized = false;
-
 export function initializeApp() {
-  if (isInitialized) {
-    return;
-  }
-
   const panelStore = usePanelStore.getState();
 
   if (panelStore.panels.length === 0) {
@@ -96,6 +90,4 @@ export function initializeApp() {
   }
 
   registerDefaultCommands();
-
-  isInitialized = true;
 }

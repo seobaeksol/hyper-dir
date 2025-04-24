@@ -8,12 +8,15 @@ import { CommandPalette } from "./components/command-palette/CommandPalette";
 import { useEffect } from "react";
 import { PanelWrapper } from "./components/layout/panel/PanelWrapper";
 import { initializeApp } from "./state/actions";
+import { once } from "./utils";
+
+const initializeAppOnce = once(initializeApp);
 
 function App() {
   useHotkeys();
 
   useEffect(() => {
-    initializeApp();
+    initializeAppOnce();
   }, []);
 
   return (
