@@ -1,6 +1,6 @@
 # ⚡ Hyper-Dir
 
-## [![codecov](https://codecov.io/gh/seobaeksol/hyper-dir/graph/badge.svg?token=LMEKDXZMTB)](https://codecov.io/gh/seobaeksol/hyper-dir)
+[![codecov](https://codecov.io/gh/seobaeksol/hyper-dir/graph/badge.svg?token=LMEKDXZMTB)](https://codecov.io/gh/seobaeksol/hyper-dir)
 
 **Hyper-Dir** is a productivity-focused, keyboard-first file explorer replacement for Windows.  
 Built with **Tauri + Rust + React**, it is designed to enhance directory navigation for developers and power users who want speed, tabs, fuzzy search, and full keyboard control.
