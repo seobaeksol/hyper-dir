@@ -120,3 +120,25 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for commit/message guidelines and branc
 ## 📜 License
 
 MIT © 2025 Hyper-Dir Contributors
+
+## Testing
+
+This project uses Vitest for testing. The following scripts are available:
+
+- `bun test` - Run tests once
+- `bun test:watch` - Run tests in watch mode
+- `bun test:ui` - Run tests with UI
+- `bun test:coverage` - Run tests with coverage reports
+
+You can also run Vitest directly with:
+
+```bash
+bunx vitest --run        # Run tests once
+bunx vitest              # Run tests in watch mode
+bunx vitest --ui         # Run tests with UI
+bunx vitest --coverage   # Run tests with coverage
+```
+
+### CI/CD
+
+Tests are automatically run via GitHub Actions on pull requests and pushes to the main branch using Bun. Coverage reports are uploaded to Codecov.
