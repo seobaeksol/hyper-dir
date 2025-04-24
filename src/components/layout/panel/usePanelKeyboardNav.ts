@@ -17,7 +17,7 @@ export function usePanelKeyboardNav(panelId: string) {
     const fileState = getCurrentFileState(panelId, panel.activeTabId);
     const { files, selectedIndex } = fileState;
 
-    const handler = (e: KeyboardEvent) => {
+    const panelKeyEventHandler = (e: KeyboardEvent) => {
       const isAlt = e.altKey;
 
       if (!isAlt && e.key === "ArrowUp") {
@@ -76,7 +76,7 @@ export function usePanelKeyboardNav(panelId: string) {
       }
     };
 
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    window.addEventListener("keydown", panelKeyEventHandler);
+    return () => window.removeEventListener("keydown", panelKeyEventHandler);
   }, [commandPaletteVisible, panel, activePanelId]);
 }
