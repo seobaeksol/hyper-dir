@@ -82,7 +82,7 @@ export const useCommandStore = create<CommandState>((set, get) => ({
 
   getMode: () => {
     const q = get().query;
-    return q.trim().startsWith(">") ? "command" : "search";
+    return q.startsWith(">") ? "command" : "search";
   },
 
   toggleCommandPalette: (mode: CommandPaletteMode) => {
