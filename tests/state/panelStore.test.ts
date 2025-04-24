@@ -2,10 +2,16 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { usePanelStore } from "@/state/panelStore";
 import { useTabStore } from "@/state/tabStore";
 import { waitFor } from "@testing-library/dom";
-import { mockNanoid } from "tests/__mocks__/nanoid";
 
 // Mock dependencies
-mockNanoid("mock-panel");
+const nanoidMock = vi.fn();
+
+vi.mock("nanoid", () => ({
+  nanoid: () => {
+    nanoidMock();
+    return `mock-panel-${nanoidMock.mock.calls.length}`;
+  },
+}));
 
 vi.mock("@/state/tabStore", () => ({
   useTabStore: {
