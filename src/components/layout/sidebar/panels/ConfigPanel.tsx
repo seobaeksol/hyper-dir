@@ -3,7 +3,7 @@ import React from "react";
 
 export const ConfigPanel: React.FC = () => {
   return (
-    <div>
+    <div role="tabpanel">
       <div className="font-bold mb-2">Settings</div>
       <ul className="text-xs space-y-2">
         <li>

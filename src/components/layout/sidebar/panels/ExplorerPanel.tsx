@@ -3,7 +3,7 @@ import React from "react";
 
 export const ExplorerPanel: React.FC = () => {
   return (
-    <div>
+    <div role="tabpanel">
       <div className="font-bold mb-2">Explorer</div>
       <ul className="space-y-1 text-xs">
         <li>📁 src/</li>

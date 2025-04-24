@@ -3,7 +3,7 @@ import React from "react";
 
 export const SearchPanel: React.FC = () => {
   return (
-    <div>
+    <div role="tabpanel">
       <div className="font-bold mb-2">Search</div>
       <input
         type="text"

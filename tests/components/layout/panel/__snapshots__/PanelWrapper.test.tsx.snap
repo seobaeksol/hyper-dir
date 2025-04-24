@@ -1,0 +1,18 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PanelWrapper > renders correct structure (snapshot) 1`] = `
+<div
+  class="flex flex-1 overflow-hidden"
+>
+  <div
+    class="flex flex-col flex-1 overflow-hidden transition-all duration-200 bg-zinc-900/50"
+  >
+    <div
+      data-testid="mock-panel-p1"
+    >
+      Panel 
+      p1
+    </div>
+  </div>
+</div>
+`;

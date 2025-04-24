@@ -1,7 +1,7 @@
 import "./App.css";
 
 import { Titlebar } from "./components/layout/Titlebar";
-import { Sidebar } from "./components/layout/Sidebar";
+import { Sidebar } from "./components/layout/sidebar/Sidebar";
 import { Statusbar } from "./components/layout/Statusbar";
 import { useHotkeys } from "./hooks/useHotkeys";
 import { CommandPalette } from "./components/command-palette/CommandPalette";
