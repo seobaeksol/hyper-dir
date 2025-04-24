@@ -2,7 +2,11 @@
 import { Command } from "@/state/commandStore";
 import { useUIStore } from "@/state/uiStore";
 import { usePanelStore } from "@/state/panelStore";
-import { getNextAvailablePosition } from "@/state/actions";
+import {
+  getNextAvailablePosition,
+  addRowPanel,
+  addColumnPanel,
+} from "@/state/actions";
 
 export function getDefaultCommands(): Command[] {
   const toggleSidebar = useUIStore.getState().toggleSidebar;
@@ -33,6 +37,16 @@ export function getDefaultCommands(): Command[] {
         const position = getNextAvailablePosition();
         addPanel(position);
       },
+    },
+    {
+      id: "add-row-panel",
+      title: "Add Panel Below",
+      action: () => addRowPanel(),
+    },
+    {
+      id: "add-column-panel",
+      title: "Add Panel Right",
+      action: () => addColumnPanel(),
     },
     {
       id: "close-panel",

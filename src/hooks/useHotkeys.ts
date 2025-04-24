@@ -3,7 +3,11 @@ import { useEffect } from "react";
 import { useSidebarController } from "./useSidebarController";
 import { useCommandStore } from "@/state/commandStore";
 import { usePanelStore } from "@/state/panelStore";
-import { getNextAvailablePosition } from "@/state/actions";
+import {
+  getNextAvailablePosition,
+  addRowPanel,
+  addColumnPanel,
+} from "@/state/actions";
 
 export function useHotkeys() {
   const left = useSidebarController("left");
@@ -46,6 +50,18 @@ export function useHotkeys() {
         addPanel(position);
       }
 
+      // New panel row shortcut (Ctrl+Alt+Down)
+      if (isCtrl && isAlt && e.key === "ArrowDown" && isShift) {
+        e.preventDefault();
+        addRowPanel();
+      }
+
+      // New panel column shortcut (Ctrl+Alt+Right)
+      if (isCtrl && isAlt && e.key === "ArrowRight" && isShift) {
+        e.preventDefault();
+        addColumnPanel();
+      }
+
       if (isCtrl && isAlt && e.key.toLowerCase() === "q") {
         e.preventDefault();
         const activePanelId = usePanelStore.getState().activePanelId;
@@ -54,7 +70,8 @@ export function useHotkeys() {
         }
       }
 
-      if (isCtrl && isAlt) {
+      // Panel navigation (without Shift)
+      if (isCtrl && isAlt && !isShift) {
         const currentPanel = panels.find(
           (p) => p.id === usePanelStore.getState().activePanelId
         );

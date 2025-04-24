@@ -21,6 +21,8 @@ vi.mock("@/state/panelStore", () => ({
 
 vi.mock("@/state/actions", () => ({
   getNextAvailablePosition: vi.fn(),
+  addRowPanel: vi.fn(),
+  addColumnPanel: vi.fn(),
 }));
 
 describe("useHotkeys", () => {
@@ -229,6 +231,56 @@ describe("useHotkeys", () => {
     expect(addPanelMock).toHaveBeenCalledWith({ row: 1, column: 0 });
   });
 
+  it("should add a row panel with Ctrl+Alt+Shift+ArrowDown", () => {
+    renderHook(() => useHotkeys());
+
+    // Simulate Ctrl+Alt+Shift+ArrowDown keydown
+    const event = createKeyboardEvent("ArrowDown", {
+      ctrlKey: true,
+      altKey: true,
+      shiftKey: true,
+    });
+
+    // Trigger the event handler
+    eventMap.keydown(event);
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(actions.addRowPanel).toHaveBeenCalled();
+  });
+
+  it("should add a column panel with Ctrl+Alt+Shift+ArrowRight", () => {
+    renderHook(() => useHotkeys());
+
+    // Simulate Ctrl+Alt+Shift+ArrowRight keydown
+    const event = createKeyboardEvent("ArrowRight", {
+      ctrlKey: true,
+      altKey: true,
+      shiftKey: true,
+    });
+
+    // Trigger the event handler
+    eventMap.keydown(event);
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(actions.addColumnPanel).toHaveBeenCalled();
+  });
+
+  it("should remove panel with Ctrl+Alt+Q", () => {
+    renderHook(() => useHotkeys());
+
+    // Simulate Ctrl+Alt+Q keydown
+    const event = createKeyboardEvent("q", {
+      ctrlKey: true,
+      altKey: true,
+    });
+
+    // Trigger the event handler
+    eventMap.keydown(event);
+
+    expect(event.preventDefault).toHaveBeenCalled();
+    expect(removePanelMock).toHaveBeenCalledWith("panel1");
+  });
+
   it("should navigate between panels with arrow keys", () => {
     renderHook(() => useHotkeys());
 
@@ -243,5 +295,38 @@ describe("useHotkeys", () => {
 
     expect(event.preventDefault).toHaveBeenCalled();
     expect(setActivePanelMock).toHaveBeenCalledWith("panel2");
+  });
+
+  it("should not trigger navigation when using shift key with arrow keys", () => {
+    renderHook(() => useHotkeys());
+
+    // Simulate Ctrl+Alt+Shift+Left keydown (should not navigate)
+    const event = createKeyboardEvent("ArrowLeft", {
+      ctrlKey: true,
+      altKey: true,
+      shiftKey: true,
+    });
+
+    // Trigger the event handler
+    eventMap.keydown(event);
+
+    // Should not call setActivePanel since Shift is pressed
+    expect(setActivePanelMock).not.toHaveBeenCalled();
+  });
+
+  it("should not navigate when no panel exists in the target direction", () => {
+    renderHook(() => useHotkeys());
+
+    // Simulate Ctrl+Alt+Left keydown (no panel exists to the left)
+    const event = createKeyboardEvent("ArrowLeft", {
+      ctrlKey: true,
+      altKey: true,
+    });
+
+    // Trigger the event handler
+    eventMap.keydown(event);
+
+    // No panel exists to the left of panel1, so setActivePanel should not be called
+    expect(setActivePanelMock).not.toHaveBeenCalled();
   });
 });

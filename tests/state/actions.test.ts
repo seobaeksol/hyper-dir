@@ -70,8 +70,18 @@ describe("state/actions", () => {
   });
 
   describe("getNextAvailablePosition", () => {
-    it("should find the first available position", () => {
-      // Mock existing panel positions
+    it("should return (0,0) for an empty panel list", () => {
+      (usePanelStore.getState as any).mockReturnValue({
+        panels: [],
+      });
+
+      const position = actions.getNextAvailablePosition();
+
+      expect(position).toEqual({ row: 0, column: 0 });
+    });
+
+    it("should complete a square when needed", () => {
+      // Mock existing panel positions forming an incomplete square
       const mockPanels = [
         { position: { row: 0, column: 0 } },
         { position: { row: 0, column: 1 } },
@@ -84,26 +94,17 @@ describe("state/actions", () => {
 
       const position = actions.getNextAvailablePosition();
 
-      // The next available position should be row 1, column 1
+      // Should complete the square at row 1, column 1
       expect(position).toEqual({ row: 1, column: 1 });
     });
 
-    it("should return (0,0) for an empty panel list", () => {
-      (usePanelStore.getState as any).mockReturnValue({
-        panels: [],
-      });
-
-      const position = actions.getNextAvailablePosition();
-
-      expect(position).toEqual({ row: 0, column: 0 });
-    });
-
-    it("should find positions in row-first order", () => {
-      // Mock existing panel positions with a gap in the first row
+    it("should add a new column for a square layout", () => {
+      // Mock existing panel positions forming a square
       const mockPanels = [
         { position: { row: 0, column: 0 } },
-        { position: { row: 0, column: 2 } },
+        { position: { row: 0, column: 1 } },
         { position: { row: 1, column: 0 } },
+        { position: { row: 1, column: 1 } },
       ];
 
       (usePanelStore.getState as any).mockReturnValue({
@@ -112,8 +113,145 @@ describe("state/actions", () => {
 
       const position = actions.getNextAvailablePosition();
 
-      // Should find the gap at row 0, column 1
+      // Should add a new column at row 0, column 2
+      expect(position).toEqual({ row: 0, column: 2 });
+    });
+
+    it("should fill gaps in the grid before extending", () => {
+      // Mock existing panel positions with a gap
+      const mockPanels = [
+        { position: { row: 0, column: 0 } },
+        { position: { row: 0, column: 2 } },
+        { position: { row: 1, column: 0 } },
+        { position: { row: 1, column: 1 } },
+      ];
+
+      (usePanelStore.getState as any).mockReturnValue({
+        panels: mockPanels,
+      });
+
+      const position = actions.getNextAvailablePosition();
+
+      // Should fill the gap at row 0, column 1
       expect(position).toEqual({ row: 0, column: 1 });
+    });
+  });
+
+  describe("addRowPanel", () => {
+    it("should add a panel below the active panel", () => {
+      const mockActivePanelId = "panel1";
+      const mockPanels = [{ id: "panel1", position: { row: 0, column: 0 } }];
+
+      const mockPanelStore = {
+        panels: mockPanels,
+        activePanelId: mockActivePanelId,
+        addPanel: vi.fn(),
+      };
+
+      (usePanelStore.getState as any).mockReturnValue(mockPanelStore);
+
+      actions.addRowPanel();
+
+      expect(mockPanelStore.addPanel).toHaveBeenCalledWith({
+        row: 1,
+        column: 0,
+      });
+    });
+
+    it("should not add a panel if one already exists at the target position", () => {
+      const mockActivePanelId = "panel1";
+      const mockPanels = [
+        { id: "panel1", position: { row: 0, column: 0 } },
+        { id: "panel2", position: { row: 1, column: 0 } },
+      ];
+
+      const mockPanelStore = {
+        panels: mockPanels,
+        activePanelId: mockActivePanelId,
+        addPanel: vi.fn(),
+      };
+
+      (usePanelStore.getState as any).mockReturnValue(mockPanelStore);
+
+      actions.addRowPanel();
+
+      expect(mockPanelStore.addPanel).not.toHaveBeenCalled();
+    });
+
+    it("should create a first panel if none exists", () => {
+      const mockPanelStore = {
+        panels: [],
+        activePanelId: "",
+        addPanel: vi.fn(),
+      };
+
+      (usePanelStore.getState as any).mockReturnValue(mockPanelStore);
+
+      actions.addRowPanel();
+
+      expect(mockPanelStore.addPanel).toHaveBeenCalledWith({
+        row: 0,
+        column: 0,
+      });
+    });
+  });
+
+  describe("addColumnPanel", () => {
+    it("should add a panel to the right of the active panel", () => {
+      const mockActivePanelId = "panel1";
+      const mockPanels = [{ id: "panel1", position: { row: 0, column: 0 } }];
+
+      const mockPanelStore = {
+        panels: mockPanels,
+        activePanelId: mockActivePanelId,
+        addPanel: vi.fn(),
+      };
+
+      (usePanelStore.getState as any).mockReturnValue(mockPanelStore);
+
+      actions.addColumnPanel();
+
+      expect(mockPanelStore.addPanel).toHaveBeenCalledWith({
+        row: 0,
+        column: 1,
+      });
+    });
+
+    it("should not add a panel if one already exists at the target position", () => {
+      const mockActivePanelId = "panel1";
+      const mockPanels = [
+        { id: "panel1", position: { row: 0, column: 0 } },
+        { id: "panel2", position: { row: 0, column: 1 } },
+      ];
+
+      const mockPanelStore = {
+        panels: mockPanels,
+        activePanelId: mockActivePanelId,
+        addPanel: vi.fn(),
+      };
+
+      (usePanelStore.getState as any).mockReturnValue(mockPanelStore);
+
+      actions.addColumnPanel();
+
+      expect(mockPanelStore.addPanel).not.toHaveBeenCalled();
+    });
+
+    it("should create a first panel if none exists", () => {
+      const mockPanelStore = {
+        panels: [],
+        activePanelId: "",
+        addPanel: vi.fn(),
+      };
+
+      (usePanelStore.getState as any).mockReturnValue(mockPanelStore);
+
+      actions.addColumnPanel();
+
+      expect(mockPanelStore.addPanel).toHaveBeenCalledWith({
+        row: 0,
+        column: 0,
+      });
     });
   });
 
