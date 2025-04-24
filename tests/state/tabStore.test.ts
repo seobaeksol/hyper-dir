@@ -63,7 +63,7 @@ describe("state/tabStore", () => {
     it("should use default path if not provided", () => {
       const { addTab } = useTabStore.getState();
 
-      const tabId = addTab(panelId, "");
+      addTab(panelId, "");
 
       const state = useTabStore.getState();
       const tab = state.tabs[panelId][0];

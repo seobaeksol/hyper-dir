@@ -65,9 +65,7 @@ describe("state/actions", () => {
     (useTabStore.getState as any).mockReturnValue(mockTabStore);
   });
 
-  afterEach(() => {
-    vi.resetAllMocks();
-  });
+  afterEach(() => {});
 
   describe("getNextAvailablePosition", () => {
     it("should return (0,0) for an empty panel list", () => {

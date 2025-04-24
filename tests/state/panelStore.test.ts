@@ -170,7 +170,6 @@ describe("state/panelStore", () => {
 
     it("should handle setting nonexistent panel as active", () => {
       const { setActivePanel } = usePanelStore.getState();
-      const initialState = usePanelStore.getState();
 
       setActivePanel("nonexistent-panel");
 
