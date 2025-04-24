@@ -1,28 +1,30 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { usePanelStore } from "@/state/panelStore";
 import { useTabStore } from "@/state/tabStore";
+import { waitFor } from "@testing-library/dom";
 
 // Mock dependencies
+const nanoidMock = vi.fn();
+
 vi.mock("nanoid", () => ({
-  nanoid: vi
-    .fn()
-    .mockImplementation(() => `mock-panel-${vi.fn().mock.calls.length}`),
+  nanoid: () => {
+    nanoidMock();
+    return `mock-panel-${nanoidMock.mock.calls.length}`;
+  },
 }));
 
 vi.mock("@/state/tabStore", () => ({
   useTabStore: {
     getState: vi.fn().mockReturnValue({
       addTab: vi.fn().mockReturnValue("mock-tab-1"),
-      getTabsByPanelId: vi
-        .fn()
-        .mockReturnValue([
-          {
-            id: "mock-tab-1",
-            path: "C:\\test\\path",
-            title: "test",
-            isActive: true,
-          },
-        ]),
+      getTabsByPanelId: vi.fn().mockReturnValue([
+        {
+          id: "mock-tab-1",
+          path: "C:\\test\\path",
+          title: "test",
+          isActive: true,
+        },
+      ]),
       closeTab: vi.fn(),
     }),
   },
@@ -83,8 +85,11 @@ describe("state/panelStore", () => {
       addPanel({ row: 1, column: 0 });
 
       const state = usePanelStore.getState();
-      expect(state.panels.length).toBe(3);
-      expect(state.activePanelId).toBe("mock-panel-3"); // Last added panel is active
+
+      waitFor(() => {
+        expect(state.panels.length).toBe(3);
+        expect(state.activePanelId).toBe("mock-panel-3"); // Last added panel is active
+      });
     });
   });
 
