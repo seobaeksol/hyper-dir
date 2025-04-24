@@ -1,14 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { useTabStore, Tab } from "@/state/tabStore";
+import { mockNanoid } from "tests/__mocks__/nanoid";
 
 // Mock nanoid to have predictable IDs
-const nanoidMock = vi.fn();
-vi.mock("nanoid", () => ({
-  nanoid: () => {
-    nanoidMock();
-    return `mock-tab-${nanoidMock.mock.calls.length}`;
-  },
-}));
+mockNanoid("mock-tab");
 
 describe("state/tabStore", () => {
   const panelId = "panel-1";
