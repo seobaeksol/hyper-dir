@@ -207,4 +207,105 @@ describe("useCommandPalette", () => {
     expect(resolvePrompt).toHaveBeenCalledWith("done");
     expect(cancelPrompt).toHaveBeenCalled();
   });
+
+  // New test for keyboard handling in prompt mode
+  it("should handle keyboard events in prompt mode", () => {
+    const setVisible = vi.fn();
+    const resolvePrompt = vi.fn();
+    const cancelPrompt = vi.fn();
+
+    (useUIStore as any).mockImplementation((fn: any) =>
+      fn({
+        commandPaletteVisible: true,
+        setCommandPaletteVisible: setVisible,
+      })
+    );
+
+    (useCommandStore as any).mockReturnValueOnce({
+      query: "",
+      commands: defaultCommands,
+      setQuery: vi.fn(),
+      prompt: { message: "Prompt", initialValue: "" },
+      startPrompt: vi.fn(),
+      resolvePrompt,
+      cancelPrompt,
+    });
+
+    renderHook(() => useCommandPalette());
+
+    // Simulate pressing Escape key
+    const escapeEvent = new KeyboardEvent("keydown", { key: "Escape" });
+    const preventDefaultSpy = vi.spyOn(escapeEvent, "preventDefault");
+    window.dispatchEvent(escapeEvent);
+
+    expect(preventDefaultSpy).toHaveBeenCalled();
+    expect(cancelPrompt).toHaveBeenCalled();
+    expect(setVisible).toHaveBeenCalledWith(false);
+
+    // Simulate pressing Enter key
+    const enterEvent = new KeyboardEvent("keydown", { key: "Enter" });
+    const enterPreventDefaultSpy = vi.spyOn(enterEvent, "preventDefault");
+    window.dispatchEvent(enterEvent);
+
+    expect(enterPreventDefaultSpy).toHaveBeenCalled();
+    expect(resolvePrompt).toHaveBeenCalled();
+    expect(setVisible).toHaveBeenCalledWith(false);
+  });
+
+  // New test for keyboard handling in normal mode
+  it("should handle Escape key in normal mode", () => {
+    const setVisible = vi.fn();
+
+    (useUIStore as any).mockImplementation((fn: any) =>
+      fn({
+        commandPaletteVisible: true,
+        setCommandPaletteVisible: setVisible,
+      })
+    );
+
+    (useCommandStore as any).mockReturnValueOnce({
+      query: "",
+      commands: defaultCommands,
+      setQuery: vi.fn(),
+      prompt: undefined, // No prompt, normal mode
+      startPrompt: vi.fn(),
+      resolvePrompt: vi.fn(),
+      cancelPrompt: vi.fn(),
+    });
+
+    renderHook(() => useCommandPalette());
+
+    // Simulate pressing Escape key
+    const escapeEvent = new KeyboardEvent("keydown", { key: "Escape" });
+    const preventDefaultSpy = vi.spyOn(escapeEvent, "preventDefault");
+    window.dispatchEvent(escapeEvent);
+
+    expect(preventDefaultSpy).toHaveBeenCalled();
+    expect(setVisible).toHaveBeenCalledWith(false);
+  });
+
+  // Add test for setting promptInput
+  it("should set promptInput with initialValue from prompt", () => {
+    (useCommandStore as any).mockReturnValueOnce({
+      query: "",
+      commands: defaultCommands,
+      setQuery: vi.fn(),
+      prompt: { message: "Prompt", initialValue: "initial" },
+      startPrompt: vi.fn(),
+      resolvePrompt: vi.fn(),
+      cancelPrompt: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useCommandPalette());
+    expect(result.current.promptInput).toBe("initial");
+
+    // Test updating promptInput
+    act(() => {
+      result.current.setPromptInput("updated value");
+    });
+
+    // Re-render to see the updated state
+    const { result: updatedResult } = renderHook(() => useCommandPalette());
+    expect(updatedResult.current.setPromptInput).toBeDefined();
+  });
 });

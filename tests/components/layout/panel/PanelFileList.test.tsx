@@ -58,19 +58,43 @@ vi.mock("@/ipc/fs", () => ({
 vi.spyOn(actions, "moveDirectory");
 
 describe("PanelFileList", () => {
+  const defaultFiles = [
+    { name: "..", path: "/parent", is_dir: true, size: 0, mtime: 0 },
+    { name: "dir1", path: "/dir1", is_dir: true, size: 0, mtime: 0 },
+    {
+      name: "file1.txt",
+      path: "/file1.txt",
+      is_dir: false,
+      size: 100,
+      mtime: 0,
+    },
+  ];
+
+  const getTabByIdMock = vi.fn();
+  const getCurrentFileStateMock = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
-    act(() => {
-      useFileStore.getState().setFileState("p1", "tab1", {
-        currentDir: "/mock",
-        files: [],
-        selectedIndex: 0,
-        sortKey: "name",
-        sortOrder: "asc",
-      });
-      useTabStore.setState({
-        tabs: {},
-      });
+
+    getTabByIdMock.mockReturnValue({
+      id: "tab1",
+      path: "/path",
+    });
+
+    getCurrentFileStateMock.mockReturnValue({
+      currentDir: "/path",
+      files: defaultFiles,
+      selectedIndex: 0,
+      sortKey: "name",
+      sortOrder: "asc",
+    });
+
+    (useTabStore as any).mockReturnValue({
+      getTabById: getTabByIdMock,
+    });
+
+    (useFileStore as any).mockReturnValue({
+      getCurrentFileState: getCurrentFileStateMock,
     });
   });
 
@@ -184,5 +208,242 @@ describe("PanelFileList", () => {
     expect(items[0].textContent).toContain("↩️ ..");
     expect(items[1].textContent).toContain("folderB");
     expect(items[2].textContent).toContain("fileA.txt");
+  });
+
+  it("renders file list with correct items", () => {
+    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+
+    expect(screen.getByTestId("mock-panel-header")).toBeInTheDocument();
+    expect(screen.getByTestId("mock-panel-item-..")).toBeInTheDocument();
+    expect(screen.getByTestId("mock-panel-item-dir1")).toBeInTheDocument();
+    expect(screen.getByTestId("mock-panel-item-file1.txt")).toBeInTheDocument();
+  });
+
+  it("initializes with the tab path", () => {
+    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+    expect(actions.moveDirectory).toHaveBeenCalledWith("tab1", "/path");
+  });
+
+  it("renders a fallback when tab is undefined", () => {
+    getTabByIdMock.mockReturnValue(undefined);
+
+    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+
+    expect(screen.getByText("No directory selected")).toBeInTheDocument();
+    expect(screen.queryByTestId("mock-panel-header")).not.toBeInTheDocument();
+  });
+
+  it("navigates to directory on item click", () => {
+    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+
+    // Click on a directory item
+    const dirItem = screen.getByTestId("mock-panel-item-dir1");
+    dirItem.click();
+
+    expect(actions.moveDirectory).toHaveBeenCalledWith("tab1", "/dir1");
+  });
+
+  it("sorts files with directories first when sortKey is not file_type", () => {
+    // Setup sort by name ascending
+    getCurrentFileStateMock.mockReturnValue({
+      currentDir: "/path",
+      files: [
+        { name: "..", path: "/parent", is_dir: true, size: 0, mtime: 0 },
+        {
+          name: "file1.txt",
+          path: "/file1.txt",
+          is_dir: false,
+          size: 100,
+          mtime: 0,
+        },
+        { name: "dir1", path: "/dir1", is_dir: true, size: 0, mtime: 0 },
+      ],
+      selectedIndex: 0,
+      sortKey: "name",
+      sortOrder: "asc",
+    });
+
+    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+
+    // Get all items
+    const items = screen.getAllByTestId(/mock-panel-item/);
+
+    // First should be parent dir
+    expect(items[0]).toHaveAttribute("data-testid", "mock-panel-item-..");
+
+    // Second should be other dir (directories first)
+    expect(items[1]).toHaveAttribute("data-testid", "mock-panel-item-dir1");
+
+    // Last should be the file
+    expect(items[2]).toHaveAttribute(
+      "data-testid",
+      "mock-panel-item-file1.txt"
+    );
+  });
+
+  it("sorts files by name descending", () => {
+    // Setup sort by name descending
+    getCurrentFileStateMock.mockReturnValue({
+      currentDir: "/path",
+      files: [
+        { name: "..", path: "/parent", is_dir: true, size: 0, mtime: 0 },
+        { name: "adir", path: "/adir", is_dir: true, size: 0, mtime: 0 },
+        { name: "bdir", path: "/bdir", is_dir: true, size: 0, mtime: 0 },
+      ],
+      selectedIndex: 0,
+      sortKey: "name",
+      sortOrder: "desc",
+    });
+
+    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+
+    // Get all items
+    const items = screen.getAllByTestId(/mock-panel-item/);
+
+    // First should be parent dir (always)
+    expect(items[0]).toHaveAttribute("data-testid", "mock-panel-item-..");
+
+    // Second should be "bdir" (higher alphabetically when desc)
+    expect(items[1]).toHaveAttribute("data-testid", "mock-panel-item-bdir");
+
+    // Third should be "adir" (lower alphabetically when desc)
+    expect(items[2]).toHaveAttribute("data-testid", "mock-panel-item-adir");
+  });
+
+  it("sorts files by size", () => {
+    // Setup sort by size ascending
+    getCurrentFileStateMock.mockReturnValue({
+      currentDir: "/path",
+      files: [
+        { name: "..", path: "/parent", is_dir: true, size: 0, mtime: 0 },
+        {
+          name: "small.txt",
+          path: "/small.txt",
+          is_dir: false,
+          size: 100,
+          mtime: 0,
+        },
+        {
+          name: "large.txt",
+          path: "/large.txt",
+          is_dir: false,
+          size: 500,
+          mtime: 0,
+        },
+      ],
+      selectedIndex: 0,
+      sortKey: "size",
+      sortOrder: "asc",
+    });
+
+    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+
+    // Get all items
+    const items = screen.getAllByTestId(/mock-panel-item/);
+
+    // First should be parent dir (always)
+    expect(items[0]).toHaveAttribute("data-testid", "mock-panel-item-..");
+
+    // Second should be smaller file
+    expect(items[1]).toHaveAttribute(
+      "data-testid",
+      "mock-panel-item-small.txt"
+    );
+
+    // Third should be larger file
+    expect(items[2]).toHaveAttribute(
+      "data-testid",
+      "mock-panel-item-large.txt"
+    );
+  });
+
+  it("sorts files by file_type without prioritizing directories", () => {
+    // Setup sort by file_type
+    getCurrentFileStateMock.mockReturnValue({
+      currentDir: "/path",
+      files: [
+        {
+          name: "..",
+          path: "/parent",
+          is_dir: true,
+          size: 0,
+          mtime: 0,
+          file_type: "directory",
+        },
+        {
+          name: "file.txt",
+          path: "/file.txt",
+          is_dir: false,
+          size: 100,
+          mtime: 0,
+          file_type: "text",
+        },
+        {
+          name: "dir",
+          path: "/dir",
+          is_dir: true,
+          size: 0,
+          mtime: 0,
+          file_type: "directory",
+        },
+      ],
+      selectedIndex: 0,
+      sortKey: "file_type",
+      sortOrder: "asc",
+    });
+
+    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+
+    // Get all items
+    const items = screen.getAllByTestId(/mock-panel-item/);
+
+    // First should be parent dir (always)
+    expect(items[0]).toHaveAttribute("data-testid", "mock-panel-item-..");
+
+    // Second should be other dir (same type as parent, but parent is always first)
+    expect(items[1]).toHaveAttribute("data-testid", "mock-panel-item-dir");
+
+    // Third should be the text file
+    expect(items[2]).toHaveAttribute("data-testid", "mock-panel-item-file.txt");
+  });
+
+  it("handles no parent directory entry correctly", () => {
+    // Setup without parent directory entry
+    getCurrentFileStateMock.mockReturnValue({
+      currentDir: "/path",
+      files: [
+        { name: "dir1", path: "/dir1", is_dir: true, size: 0, mtime: 0 },
+        {
+          name: "file1.txt",
+          path: "/file1.txt",
+          is_dir: false,
+          size: 100,
+          mtime: 0,
+        },
+      ],
+      selectedIndex: 0,
+      sortKey: "name",
+      sortOrder: "asc",
+    });
+
+    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+
+    expect(screen.queryByTestId("mock-panel-item-..")).not.toBeInTheDocument();
+    expect(screen.getByTestId("mock-panel-item-dir1")).toBeInTheDocument();
+    expect(screen.getByTestId("mock-panel-item-file1.txt")).toBeInTheDocument();
+  });
+
+  it("displays the current directory path", () => {
+    getCurrentFileStateMock.mockReturnValue({
+      currentDir: "/test/path",
+      files: defaultFiles,
+      selectedIndex: 0,
+      sortKey: "name",
+      sortOrder: "asc",
+    });
+
+    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+
+    expect(screen.getByText("/test/path")).toBeInTheDocument();
   });
 });

@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { act, renderHook } from "@testing-library/react";
 import { usePanelKeyboardNav } from "../../../../src/components/layout/panel/usePanelKeyboardNav";
 import { usePanelStore } from "@/state/panelStore";
 import { useFileStore, useTabStore, useUIStore } from "@/state";
+import { moveDirectory } from "@/state/actions";
 
 //**
 // Enrolled keys: [ "ArrowUp", "ArrowDown", "Enter", "Backspace", "Escape", ]
@@ -526,5 +527,177 @@ describe("usePanelKeyboardNav", () => {
     });
     // No assertion: just ensure no error occurs
     expect(true).toBe(true);
+  });
+
+  it("should initialize with correct state", () => {
+    const { result } = renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    expect(result.current).toBeUndefined(); // Hook doesn't return anything
+    expect(useFileStore).toHaveBeenCalled();
+    expect(useTabStore).toHaveBeenCalled();
+    expect(usePanelStore).toHaveBeenCalled();
+  });
+
+  it("should handle ArrowDown to move selection down", () => {
+    renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    // Simulate ArrowDown key press
+    const event = new KeyboardEvent("keydown", { key: "ArrowDown" });
+    window.dispatchEvent(event);
+
+    expect(useFileStore.getState().setSelectedIndex).toHaveBeenCalled();
+  });
+
+  it("should handle ArrowUp to move selection up", () => {
+    renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    // Simulate ArrowUp key press
+    const event = new KeyboardEvent("keydown", { key: "ArrowUp" });
+    window.dispatchEvent(event);
+
+    expect(useFileStore.getState().setSelectedIndex).toHaveBeenCalled();
+  });
+
+  it("should handle Enter to navigate into directory", () => {
+    renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    // Simulate Enter key press when a directory is selected
+    const event = new KeyboardEvent("keydown", { key: "Enter" });
+    window.dispatchEvent(event);
+
+    // Since we have index 1 selected (dir1), it should navigate there
+    expect(moveDirectory).toHaveBeenCalled();
+  });
+
+  it("should not navigate when Enter is pressed on a file", () => {
+    // Change selected index to a file
+    (useFileStore as any).mockReturnValue({
+      fileStates: {
+        [mockPanel.id]: {
+          [mockPanel.activeTabId]: {
+            files: mockFiles,
+            selectedIndex: 2, // file1.txt selected
+            currentDir: mockPanel.path,
+          },
+        },
+      },
+      setSelectedIndex: vi.fn(),
+    });
+
+    renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    // Simulate Enter key press when a file is selected
+    const event = new KeyboardEvent("keydown", { key: "Enter" });
+    window.dispatchEvent(event);
+
+    // No navigation should happen for a file
+    expect(moveDirectory).not.toHaveBeenCalled();
+  });
+
+  it("should handle Home key to select first item", () => {
+    renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    // Simulate Home key press
+    const event = new KeyboardEvent("keydown", { key: "Home" });
+    window.dispatchEvent(event);
+
+    expect(useFileStore.getState().setSelectedIndex).toHaveBeenCalled();
+  });
+
+  it("should handle End key to select last item", () => {
+    renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    // Simulate End key press
+    const event = new KeyboardEvent("keydown", { key: "End" });
+    window.dispatchEvent(event);
+
+    expect(useFileStore.getState().setSelectedIndex).toHaveBeenCalled();
+  });
+
+  it("should handle PageDown key to move selection down by page size", () => {
+    renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    // Simulate PageDown key press
+    const event = new KeyboardEvent("keydown", { key: "PageDown" });
+    window.dispatchEvent(event);
+
+    // We have 4 items, so should select the last one (index 3)
+    expect(useFileStore.getState().setSelectedIndex).toHaveBeenCalled();
+  });
+
+  it("should handle PageUp key to move selection up by page size", () => {
+    // Change selected index to end of list
+    (useFileStore as any).mockReturnValue({
+      fileStates: {
+        [mockPanel.id]: {
+          [mockPanel.activeTabId]: {
+            files: mockFiles,
+            selectedIndex: 3, // Last item
+            currentDir: mockPanel.path,
+          },
+        },
+      },
+      setSelectedIndex: vi.fn(),
+    });
+
+    renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    // Simulate PageUp key press
+    const event = new KeyboardEvent("keydown", { key: "PageUp" });
+    window.dispatchEvent(event);
+
+    // Should jump to first item (index 0)
+    expect(useFileStore.getState().setSelectedIndex).toHaveBeenCalled();
+  });
+
+  it("should do nothing when no active panel or tab is found", () => {
+    // Mock the scenario where there's no active panel or tab
+    (useTabStore as any).mockReturnValue({
+      getActiveTab: vi.fn(() => null), // No active tab
+    });
+
+    renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    // Simulate a key press
+    const event = new KeyboardEvent("keydown", { key: "ArrowDown" });
+    window.dispatchEvent(event);
+
+    // No actions should be taken
+    expect(useFileStore.getState().setSelectedIndex).not.toHaveBeenCalled();
+    expect(moveDirectory).not.toHaveBeenCalled();
+  });
+
+  it("should do nothing when fileState is not found", () => {
+    // Mock the scenario where there's no fileState for the panel/tab
+    (useFileStore as any).mockReturnValue({
+      fileStates: {}, // Empty file states
+      setSelectedIndex: vi.fn(),
+    });
+
+    renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    // Simulate a key press
+    const event = new KeyboardEvent("keydown", { key: "ArrowDown" });
+    window.dispatchEvent(event);
+
+    // No actions should be taken
+    expect(useFileStore.getState().setSelectedIndex).not.toHaveBeenCalled();
+    expect(moveDirectory).not.toHaveBeenCalled();
+  });
+
+  it("should clean up event listeners on unmount", () => {
+    // Spy on removeEventListener
+    const removeEventListenerSpy = vi.spyOn(window, "removeEventListener");
+
+    const { unmount } = renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    // Unmount the hook
+    unmount();
+
+    // Should have removed the event listener
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      "keydown",
+      expect.any(Function)
+    );
   });
 });

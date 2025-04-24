@@ -10,8 +10,6 @@ import {
 
 export function getDefaultCommands(): Command[] {
   const toggleSidebar = useUIStore.getState().toggleSidebar;
-  const { addPanel, removePanel, setActivePanel, panels } =
-    usePanelStore.getState();
 
   return [
     {
@@ -34,6 +32,7 @@ export function getDefaultCommands(): Command[] {
       id: "create-panel",
       title: "Create New Panel",
       action: () => {
+        const { addPanel } = usePanelStore.getState();
         const position = getNextAvailablePosition();
         addPanel(position);
       },
@@ -52,7 +51,7 @@ export function getDefaultCommands(): Command[] {
       id: "close-panel",
       title: "Close Current Panel",
       action: () => {
-        const activePanelId = usePanelStore.getState().activePanelId;
+        const { removePanel, panels, activePanelId } = usePanelStore.getState();
         if (panels.length > 1) {
           removePanel(activePanelId);
         }
@@ -62,9 +61,9 @@ export function getDefaultCommands(): Command[] {
       id: "focus-panel-up",
       title: "Focus Panel Above",
       action: () => {
-        const currentPanel = panels.find(
-          (p) => p.id === usePanelStore.getState().activePanelId
-        );
+        const { setActivePanel, panels, activePanelId } =
+          usePanelStore.getState();
+        const currentPanel = panels.find((p) => p.id === activePanelId);
         if (!currentPanel) return;
 
         const targetPanel = panels.find(
@@ -82,9 +81,9 @@ export function getDefaultCommands(): Command[] {
       id: "focus-panel-down",
       title: "Focus Panel Below",
       action: () => {
-        const currentPanel = panels.find(
-          (p) => p.id === usePanelStore.getState().activePanelId
-        );
+        const { setActivePanel, panels, activePanelId } =
+          usePanelStore.getState();
+        const currentPanel = panels.find((p) => p.id === activePanelId);
         if (!currentPanel) return;
 
         const targetPanel = panels.find(
@@ -102,9 +101,9 @@ export function getDefaultCommands(): Command[] {
       id: "focus-panel-left",
       title: "Focus Panel Left",
       action: () => {
-        const currentPanel = panels.find(
-          (p) => p.id === usePanelStore.getState().activePanelId
-        );
+        const { setActivePanel, panels, activePanelId } =
+          usePanelStore.getState();
+        const currentPanel = panels.find((p) => p.id === activePanelId);
         if (!currentPanel) return;
 
         const targetPanel = panels.find(
@@ -122,9 +121,9 @@ export function getDefaultCommands(): Command[] {
       id: "focus-panel-right",
       title: "Focus Panel Right",
       action: () => {
-        const currentPanel = panels.find(
-          (p) => p.id === usePanelStore.getState().activePanelId
-        );
+        const { setActivePanel, panels, activePanelId } =
+          usePanelStore.getState();
+        const currentPanel = panels.find((p) => p.id === activePanelId);
         if (!currentPanel) return;
 
         const targetPanel = panels.find(
