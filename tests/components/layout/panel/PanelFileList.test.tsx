@@ -1,17 +1,41 @@
 import { act, render, screen } from "@testing-library/react";
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
 import { PanelFileList } from "@/components/layout/panel/PanelFileList";
 import { useFileStore } from "@/state/fileStore";
 import { useTabStore } from "@/state/tabStore";
 import * as actions from "@/state/actions";
 import { usePanelStore } from "@/state/panelStore";
 
+// Mock dependencies
 vi.mock("@tauri-apps/api/path", () => ({
   dirname: vi.fn(async () => "/mock/path"),
 }));
 vi.mock("@tauri-apps/api/core", () => ({
   invoke: vi.fn(),
+}));
+
+vi.mock("@/state/panelStore", () => ({
+  usePanelStore: {
+    getState: vi.fn(),
+  },
+}));
+
+vi.mock("@/state/tabStore", () => ({
+  useTabStore: {
+    getState: vi.fn(),
+    getTabById: vi.fn(),
+  },
+}));
+
+vi.mock("@/state/fileStore", () => ({
+  useFileStore: vi.fn(() => ({
+    getState: vi.fn(),
+    getCurrentFileState: vi.fn(),
+    setFileState: vi.fn(),
+    setSortKey: vi.fn(),
+    setSortOrder: vi.fn(),
+  })),
 }));
 
 const mockFiles = [
@@ -55,6 +79,7 @@ vi.mock("@/ipc/fs", () => ({
   removeFileOrDirectory: vi.fn(async () => {}),
   renameFileOrDirectory: vi.fn(async () => {}),
 }));
+
 vi.spyOn(actions, "moveDirectory");
 
 describe("PanelFileList", () => {
@@ -89,25 +114,12 @@ describe("PanelFileList", () => {
       sortOrder: "asc",
     });
 
-    (useTabStore as any).mockReturnValue({
+    (useTabStore.getState as Mock).mockReturnValue({
       getTabById: getTabByIdMock,
     });
-
-    (useFileStore as any).mockReturnValue({
-      getCurrentFileState: getCurrentFileStateMock,
-    });
   });
 
-  afterEach(() => {
-    act(() => {
-      useFileStore.setState({
-        fileStates: {},
-      });
-      useTabStore.setState({
-        tabs: {},
-      });
-    });
-  });
+  afterEach(() => {});
 
   it("renders nothing if tab is not found", async () => {
     // No tab set for this panel/tab id
@@ -117,40 +129,42 @@ describe("PanelFileList", () => {
     expect(screen.queryByRole("listitem")).not.toBeInTheDocument();
   });
 
-  it("renders files and parent entry", async () => {
-    await act(async () => {
-      usePanelStore.setState({
-        panels: [
-          {
-            id: "p1",
-            activeTabId: "tab1",
-            position: { row: 0, column: 0 },
-          },
-        ],
-        activePanelId: "p1",
-      });
-      useTabStore.setState({
-        tabs: {
-          p1: [
-            { id: "tab1", path: "/mock", title: "Mock Tab", isActive: true },
-          ],
+  it("renders files and parent entry", () => {
+    // Setup panel, tab, and file state
+    (usePanelStore.getState as Mock).mockReturnValue({
+      panels: [
+        {
+          id: "p1",
+          activeTabId: "tab1",
+          position: { row: 0, column: 0 },
         },
-      });
-      useFileStore.setState({
-        fileStates: {
-          p1: {
-            tab1: {
-              currentDir: "/mock",
-              files: mockFiles,
-              selectedIndex: 1,
-              sortKey: "name",
-              sortOrder: "asc",
-            },
-          },
-        },
-      });
-      render(<PanelFileList panelId="p1" tabId="tab1" />);
+      ],
+      activePanelId: "p1",
     });
+
+    (useTabStore.getState as Mock).mockReturnValue({
+      tabs: {
+        p1: [{ id: "tab1", path: "/mock", title: "Mock Tab", isActive: true }],
+      },
+    });
+
+    (useFileStore.getState as Mock).mockReturnValue({
+      fileStates: {
+        p1: {
+          tab1: {
+            currentDir: "/mock",
+            files: mockFiles,
+            selectedIndex: 1,
+            sortKey: "name",
+            sortOrder: "asc",
+          },
+        },
+      },
+      getCurrentFileState: getCurrentFileStateMock,
+    });
+
+    render(<PanelFileList panelId="p1" tabId="tab1" />);
+
     expect(screen.getByText("↩️ ..")).toBeInTheDocument();
     expect(
       screen.getByText((_, node) => node?.textContent === "📄 fileA.txt")
