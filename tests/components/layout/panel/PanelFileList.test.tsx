@@ -221,8 +221,10 @@ describe("PanelFileList", () => {
     expect(items[2].textContent).toContain("file1.txt");
   });
 
-  it("renders file list with correct items", () => {
-    render(<PanelFileList panelId="p1" tabId="tab1" />);
+  it("renders file list with correct items", async () => {
+    await act(async () => {
+      render(<PanelFileList panelId="p1" tabId="tab1" />);
+    });
 
     expect(screen.getByTestId("mock-panel-header")).toBeInTheDocument();
     expect(screen.getByTestId("mock-panel-item-..")).toBeInTheDocument();
@@ -230,8 +232,10 @@ describe("PanelFileList", () => {
     expect(screen.getByTestId("mock-panel-item-file1.txt")).toBeInTheDocument();
   });
 
-  it("initializes with the tab path", () => {
-    render(<PanelFileList panelId="p1" tabId="tab1" />);
+  it("initializes with the tab path", async () => {
+    await act(async () => {
+      render(<PanelFileList panelId="p1" tabId="tab1" />);
+    });
     expect(actions.moveDirectory).toHaveBeenCalledWith("tab1", "/path");
   });
 
@@ -265,12 +269,16 @@ describe("PanelFileList", () => {
     expect(screen.queryByTestId("mock-panel-header")).not.toBeInTheDocument();
   });
 
-  it("navigates to directory on item click", () => {
-    render(<PanelFileList panelId="p1" tabId="tab1" />);
+  it("navigates to directory on item click", async () => {
+    await act(async () => {
+      render(<PanelFileList panelId="p1" tabId="tab1" />);
+    });
 
     // Click on a directory item
-    const dirItem = screen.getByTestId("mock-panel-item-dir1");
-    dirItem.click();
+    await act(async () => {
+      const dirItem = screen.getByTestId("mock-panel-item-dir1");
+      dirItem.click();
+    });
 
     expect(actions.moveDirectory).toHaveBeenCalledWith("tab1", "/dir1");
   });

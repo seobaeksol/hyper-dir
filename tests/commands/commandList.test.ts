@@ -144,7 +144,7 @@ describe("commandList", () => {
     expect(removePanelMock).toHaveBeenCalledWith("panel1");
   });
 
-  it("should not close panel if it's the only panel", () => {
+  it("should not close panel if it's the only panel", async () => {
     // Mock having only one panel
     (usePanelStore.getState as Mock).mockClear().mockReturnValue({
       addPanel: addPanelMock,
@@ -156,7 +156,7 @@ describe("commandList", () => {
 
     const closePanelCmd = commands.find((c: Command) => c.id === "close-panel");
 
-    act(() => {
+    await act(async () => {
       closePanelCmd?.action();
     });
 
