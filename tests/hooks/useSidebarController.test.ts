@@ -61,30 +61,30 @@ describe("useSidebarController", () => {
     expect(rightResult.current.activeTabId).toBe("config");
   });
 
-  it("should call setSidebarVisible when setVisible is called", () => {
+  it("should call setSidebarVisible when setVisible is called", async () => {
     const { result } = renderHook(() => useSidebarController("left"));
 
-    act(() => {
+    await act(async () => {
       result.current.setVisible(true);
     });
 
     expect(mockedSetSidebarVisible).toHaveBeenCalledWith("left", true);
   });
 
-  it("should call toggleSidebar when toggle is called", () => {
+  it("should call toggleSidebar when toggle is called", async () => {
     const { result } = renderHook(() => useSidebarController("right"));
 
-    act(() => {
+    await act(async () => {
       result.current.toggle();
     });
 
     expect(mockedToggleSidebar).toHaveBeenCalledWith("right");
   });
 
-  it("should call setActiveTab when setActiveTab is called", () => {
+  it("should call setActiveTab when setActiveTab is called", async () => {
     const { result } = renderHook(() => useSidebarController("left"));
 
-    act(() => {
+    await act(async () => {
       result.current.setActiveTab("search");
     });
 

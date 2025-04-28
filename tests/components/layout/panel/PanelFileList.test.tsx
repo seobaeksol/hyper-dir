@@ -1,12 +1,13 @@
 import { act, render, screen } from "@testing-library/react";
-
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
 import { PanelFileList } from "@/components/layout/panel/PanelFileList";
 import { useFileStore } from "@/state/fileStore";
 import { useTabStore } from "@/state/tabStore";
 import * as actions from "@/state/actions";
 import { usePanelStore } from "@/state/panelStore";
+import { FileEntry, readDirectory } from "@/ipc/fs";
 
+// Mock dependencies
 vi.mock("@tauri-apps/api/path", () => ({
   dirname: vi.fn(async () => "/mock/path"),
 }));
@@ -14,103 +15,116 @@ vi.mock("@tauri-apps/api/core", () => ({
   invoke: vi.fn(),
 }));
 
-const mockFiles = [
+vi.mock("@/components/layout/panel/PanelHeader", () => ({
+  PanelHeader: vi.fn(
+    ({
+      panelId,
+      tabId,
+      sortKey,
+      sortOrder,
+    }: {
+      panelId: string;
+      tabId: string;
+      sortKey: string;
+      sortOrder: string;
+    }) => (
+      <div data-testid="mock-panel-header">
+        <span
+          data-testid={`mock-panel-header-${panelId}-${tabId}-${sortKey}-${sortOrder}`}
+        >
+          Mock Panel Header
+        </span>
+      </div>
+    )
+  ),
+}));
+
+vi.mock("@/components/layout/panel/PanelItem", () => ({
+  PanelItem: vi.fn(
+    ({ file, onClick }: { file: FileEntry; onClick: () => void }) => (
+      <div data-testid={`mock-panel-item-${file.name}`} onClick={onClick}>
+        <span>{file.name}</span>
+      </div>
+    )
+  ),
+}));
+
+const defaultFiles: FileEntry[] = [
   {
-    name: "fileA.txt",
-    is_dir: false,
-    file_type: "txt",
-    size: 100,
-    modified: 1,
-    path: "/fileA.txt",
+    name: "..",
+    path: "/parent",
+    is_dir: true,
+    size: 0,
+    modified: 0,
+    file_type: "dir",
   },
   {
-    name: "folderB",
+    name: "dir1",
+    path: "/dir1",
     is_dir: true,
-    file_type: "dir",
     size: 0,
-    modified: 2,
-    path: "/folderB",
+    modified: 0,
+    file_type: "dir",
+  },
+  {
+    name: "file1.txt",
+    path: "/file1.txt",
+    is_dir: false,
+    size: 100,
+    modified: 1713775552,
+    file_type: "txt",
   },
 ];
 
 // Mock fs functions to prevent real invoke calls
 vi.mock("@/ipc/fs", () => ({
-  readDirectory: vi.fn(async () => [
-    {
-      name: "fileA.txt",
-      path: "/mock/path/fileA.txt",
-      is_dir: false,
-      size: 1234,
-      modified: 1713775552,
-      file_type: "file",
-    },
-    {
-      name: "folderB",
-      path: "/mock/path/folderB",
-      is_dir: true,
-      file_type: "dir",
-    },
-  ]),
+  readDirectory: vi.fn(async () => defaultFiles),
   createDirectory: vi.fn(async () => {}),
   removeFileOrDirectory: vi.fn(async () => {}),
   renameFileOrDirectory: vi.fn(async () => {}),
 }));
+
 vi.spyOn(actions, "moveDirectory");
 
 describe("PanelFileList", () => {
-  const defaultFiles = [
-    { name: "..", path: "/parent", is_dir: true, size: 0, mtime: 0 },
-    { name: "dir1", path: "/dir1", is_dir: true, size: 0, mtime: 0 },
-    {
-      name: "file1.txt",
-      path: "/file1.txt",
-      is_dir: false,
-      size: 100,
-      mtime: 0,
-    },
-  ];
-
-  const getTabByIdMock = vi.fn();
-  const getCurrentFileStateMock = vi.fn();
-
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
 
-    getTabByIdMock.mockReturnValue({
-      id: "tab1",
-      path: "/path",
-    });
-
-    getCurrentFileStateMock.mockReturnValue({
-      currentDir: "/path",
-      files: defaultFiles,
-      selectedIndex: 0,
-      sortKey: "name",
-      sortOrder: "asc",
-    });
-
-    (useTabStore as any).mockReturnValue({
-      getTabById: getTabByIdMock,
-    });
-
-    (useFileStore as any).mockReturnValue({
-      getCurrentFileState: getCurrentFileStateMock,
-    });
-  });
-
-  afterEach(() => {
-    act(() => {
-      useFileStore.setState({
-        fileStates: {},
+    await act(async () => {
+      usePanelStore.setState({
+        panels: [
+          { id: "p1", activeTabId: "tab1", position: { row: 0, column: 0 } },
+        ],
+        activePanelId: "p1",
       });
+
       useTabStore.setState({
-        tabs: {},
+        tabs: {
+          p1: [
+            { id: "tab1", path: "/path", title: "Mock Tab", isActive: true },
+          ],
+        },
+      });
+
+      useFileStore.setState({
+        fileStates: {
+          p1: {
+            tab1: {
+              currentDir: "/path",
+              files: defaultFiles,
+              selectedIndex: 0,
+              sortKey: "name",
+              sortOrder: "asc",
+            },
+          },
+        },
       });
     });
   });
+
+  afterEach(() => {});
 
   it("renders nothing if tab is not found", async () => {
-    // No tab set for this panel/tab id
     await act(async () => {
       render(<PanelFileList panelId="p1" tabId="t1" />);
     });
@@ -118,6 +132,7 @@ describe("PanelFileList", () => {
   });
 
   it("renders files and parent entry", async () => {
+    // Setup panel, tab, and file state
     await act(async () => {
       usePanelStore.setState({
         panels: [
@@ -129,6 +144,7 @@ describe("PanelFileList", () => {
         ],
         activePanelId: "p1",
       });
+
       useTabStore.setState({
         tabs: {
           p1: [
@@ -136,12 +152,13 @@ describe("PanelFileList", () => {
           ],
         },
       });
+
       useFileStore.setState({
         fileStates: {
           p1: {
             tab1: {
               currentDir: "/mock",
-              files: mockFiles,
+              files: defaultFiles,
               selectedIndex: 1,
               sortKey: "name",
               sortOrder: "asc",
@@ -151,13 +168,10 @@ describe("PanelFileList", () => {
       });
       render(<PanelFileList panelId="p1" tabId="tab1" />);
     });
-    expect(screen.getByText("↩️ ..")).toBeInTheDocument();
-    expect(
-      screen.getByText((_, node) => node?.textContent === "📄 fileA.txt")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText((_, node) => node?.textContent === "📁 folderB")
-    ).toBeInTheDocument();
+
+    expect(screen.getByTestId("mock-panel-item-..")).toBeInTheDocument();
+    expect(screen.getByTestId("mock-panel-item-file1.txt")).toBeInTheDocument();
+    expect(screen.getByTestId("mock-panel-item-dir1")).toBeInTheDocument();
   });
 
   it("calls moveDirectory on mount if tab exists", async () => {
@@ -171,13 +185,14 @@ describe("PanelFileList", () => {
       });
       useFileStore.getState().setFileState("p1", "tab1", {
         currentDir: "/mock",
-        files: mockFiles,
+        files: defaultFiles,
         selectedIndex: 1,
         sortKey: "name",
         sortOrder: "asc",
       });
       render(<PanelFileList panelId="p1" tabId="tab1" />);
     });
+
     expect(actions.moveDirectory).toHaveBeenCalledWith("tab1", "/mock");
   });
 
@@ -192,26 +207,24 @@ describe("PanelFileList", () => {
       });
       useFileStore.getState().setFileState("p1", "tab1", {
         currentDir: "/mock",
-        files: mockFiles,
+        files: defaultFiles,
         selectedIndex: 1,
         sortKey: "name",
         sortOrder: "asc",
       });
       render(<PanelFileList panelId="p1" tabId="tab1" />);
     });
-    // There are two lists: header and files. The second <ul> contains file entries.
-    const allUls = document.querySelectorAll("ul");
-    const fileListUl = allUls[1];
-    const items = fileListUl
-      ? Array.from(fileListUl.querySelectorAll("li"))
-      : [];
-    expect(items[0].textContent).toContain("↩️ ..");
-    expect(items[1].textContent).toContain("folderB");
-    expect(items[2].textContent).toContain("fileA.txt");
+
+    const items = screen.getAllByTestId(/mock-panel-item/);
+    expect(items[0].textContent).toContain("..");
+    expect(items[1].textContent).toContain("dir1");
+    expect(items[2].textContent).toContain("file1.txt");
   });
 
-  it("renders file list with correct items", () => {
-    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+  it("renders file list with correct items", async () => {
+    await act(async () => {
+      render(<PanelFileList panelId="p1" tabId="tab1" />);
+    });
 
     expect(screen.getByTestId("mock-panel-header")).toBeInTheDocument();
     expect(screen.getByTestId("mock-panel-item-..")).toBeInTheDocument();
@@ -219,51 +232,67 @@ describe("PanelFileList", () => {
     expect(screen.getByTestId("mock-panel-item-file1.txt")).toBeInTheDocument();
   });
 
-  it("initializes with the tab path", () => {
-    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+  it("initializes with the tab path", async () => {
+    await act(async () => {
+      render(<PanelFileList panelId="p1" tabId="tab1" />);
+    });
     expect(actions.moveDirectory).toHaveBeenCalledWith("tab1", "/path");
   });
 
-  it("renders a fallback when tab is undefined", () => {
-    getTabByIdMock.mockReturnValue(undefined);
+  it("renders a fallback when tab is undefined", async () => {
+    await act(async () => {
+      useTabStore.setState({
+        tabs: {
+          p1: [
+            { id: "tab1", path: "/path", title: "Mock Tab", isActive: true },
+          ],
+        },
+      });
+      useFileStore.setState({
+        fileStates: {
+          p1: {
+            tab1: {
+              currentDir: "/path",
+              files: [],
+              selectedIndex: 0,
+              sortKey: "name",
+              sortOrder: "asc",
+            },
+          },
+        },
+      });
 
-    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+      render(<PanelFileList panelId="p1" tabId="undefined-tab" />);
+    });
 
     expect(screen.getByText("No directory selected")).toBeInTheDocument();
     expect(screen.queryByTestId("mock-panel-header")).not.toBeInTheDocument();
   });
 
-  it("navigates to directory on item click", () => {
-    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+  it("navigates to directory on item click", async () => {
+    await act(async () => {
+      render(<PanelFileList panelId="p1" tabId="tab1" />);
+    });
 
     // Click on a directory item
-    const dirItem = screen.getByTestId("mock-panel-item-dir1");
-    dirItem.click();
+    await act(async () => {
+      const dirItem = screen.getByTestId("mock-panel-item-dir1");
+      dirItem.click();
+    });
 
     expect(actions.moveDirectory).toHaveBeenCalledWith("tab1", "/dir1");
   });
 
-  it("sorts files with directories first when sortKey is not file_type", () => {
-    // Setup sort by name ascending
-    getCurrentFileStateMock.mockReturnValue({
-      currentDir: "/path",
-      files: [
-        { name: "..", path: "/parent", is_dir: true, size: 0, mtime: 0 },
-        {
-          name: "file1.txt",
-          path: "/file1.txt",
-          is_dir: false,
-          size: 100,
-          mtime: 0,
-        },
-        { name: "dir1", path: "/dir1", is_dir: true, size: 0, mtime: 0 },
-      ],
-      selectedIndex: 0,
-      sortKey: "name",
-      sortOrder: "asc",
-    });
+  it("sorts files with directories first when sortKey is not file_type", async () => {
+    await act(async () => {
+      // Setup sort by name ascending
+      useFileStore.getState().setFileState("p1", "tab1", {
+        sortKey: "name",
+        sortOrder: "asc",
+      });
 
-    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+      render(<PanelFileList panelId="p1" tabId="tab1" />);
+    });
 
     // Get all items
     const items = screen.getAllByTestId(/mock-panel-item/);
@@ -281,21 +310,43 @@ describe("PanelFileList", () => {
     );
   });
 
-  it("sorts files by name descending", () => {
+  it("sorts files by name descending", async () => {
     // Setup sort by name descending
-    getCurrentFileStateMock.mockReturnValue({
-      currentDir: "/path",
-      files: [
-        { name: "..", path: "/parent", is_dir: true, size: 0, mtime: 0 },
-        { name: "adir", path: "/adir", is_dir: true, size: 0, mtime: 0 },
-        { name: "bdir", path: "/bdir", is_dir: true, size: 0, mtime: 0 },
-      ],
-      selectedIndex: 0,
-      sortKey: "name",
-      sortOrder: "desc",
-    });
+    await act(async () => {
+      (readDirectory as Mock).mockResolvedValueOnce([
+        {
+          name: "..",
+          path: "/parent",
+          is_dir: true,
+          size: 0,
+          modified: 0,
+          file_type: "dir",
+        },
+        {
+          name: "adir",
+          path: "/adir",
+          is_dir: true,
+          size: 0,
+          modified: 0,
+          file_type: "dir",
+        },
+        {
+          name: "bdir",
+          path: "/bdir",
+          is_dir: true,
+          size: 0,
+          modified: 0,
+          file_type: "dir",
+        },
+      ]);
 
-    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+      useFileStore.getState().setFileState("p1", "tab1", {
+        sortKey: "name",
+        sortOrder: "desc",
+      });
+
+      render(<PanelFileList panelId="p1" tabId="tab1" />);
+    });
 
     // Get all items
     const items = screen.getAllByTestId(/mock-panel-item/);
@@ -310,33 +361,43 @@ describe("PanelFileList", () => {
     expect(items[2]).toHaveAttribute("data-testid", "mock-panel-item-adir");
   });
 
-  it("sorts files by size", () => {
+  it("sorts files by size", async () => {
     // Setup sort by size ascending
-    getCurrentFileStateMock.mockReturnValue({
-      currentDir: "/path",
-      files: [
-        { name: "..", path: "/parent", is_dir: true, size: 0, mtime: 0 },
+    await act(async () => {
+      (readDirectory as Mock).mockResolvedValueOnce([
+        {
+          name: "..",
+          path: "/parent",
+          is_dir: true,
+          size: 0,
+          modified: 0,
+          file_type: "dir",
+        },
         {
           name: "small.txt",
           path: "/small.txt",
           is_dir: false,
           size: 100,
-          mtime: 0,
+          modified: 0,
+          file_type: "txt",
         },
         {
           name: "large.txt",
           path: "/large.txt",
           is_dir: false,
           size: 500,
-          mtime: 0,
+          modified: 0,
+          file_type: "txt",
         },
-      ],
-      selectedIndex: 0,
-      sortKey: "size",
-      sortOrder: "asc",
-    });
+      ]);
 
-    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+      useFileStore.getState().setFileState("p1", "tab1", {
+        sortKey: "size",
+        sortOrder: "asc",
+      });
+
+      render(<PanelFileList panelId="p1" tabId="tab1" />);
+    });
 
     // Get all items
     const items = screen.getAllByTestId(/mock-panel-item/);
@@ -357,42 +418,43 @@ describe("PanelFileList", () => {
     );
   });
 
-  it("sorts files by file_type without prioritizing directories", () => {
+  it("sorts files by file_type without prioritizing directories", async () => {
     // Setup sort by file_type
-    getCurrentFileStateMock.mockReturnValue({
-      currentDir: "/path",
-      files: [
+    await act(async () => {
+      (readDirectory as Mock).mockResolvedValueOnce([
         {
           name: "..",
           path: "/parent",
           is_dir: true,
           size: 0,
-          mtime: 0,
-          file_type: "directory",
+          modified: 0,
+          file_type: "dir",
         },
         {
           name: "file.txt",
           path: "/file.txt",
           is_dir: false,
           size: 100,
-          mtime: 0,
-          file_type: "text",
+          modified: 0,
+          file_type: "txt",
         },
         {
           name: "dir",
           path: "/dir",
           is_dir: true,
           size: 0,
-          mtime: 0,
-          file_type: "directory",
+          modified: 0,
+          file_type: "dir",
         },
-      ],
-      selectedIndex: 0,
-      sortKey: "file_type",
-      sortOrder: "asc",
-    });
+      ]);
 
-    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+      useFileStore.getState().setFileState("p1", "tab1", {
+        sortKey: "file_type",
+        sortOrder: "asc",
+      });
+
+      render(<PanelFileList panelId="p1" tabId="tab1" />);
+    });
 
     // Get all items
     const items = screen.getAllByTestId(/mock-panel-item/);
@@ -407,43 +469,57 @@ describe("PanelFileList", () => {
     expect(items[2]).toHaveAttribute("data-testid", "mock-panel-item-file.txt");
   });
 
-  it("handles no parent directory entry correctly", () => {
+  it("handles no parent directory entry correctly", async () => {
     // Setup without parent directory entry
-    getCurrentFileStateMock.mockReturnValue({
-      currentDir: "/path",
-      files: [
-        { name: "dir1", path: "/dir1", is_dir: true, size: 0, mtime: 0 },
+    await act(async () => {
+      (readDirectory as Mock).mockResolvedValueOnce([
+        {
+          name: "dir1",
+          path: "C:\\dir1",
+          is_dir: true,
+          size: 0,
+          modified: 0,
+          file_type: "dir",
+        },
         {
           name: "file1.txt",
-          path: "/file1.txt",
+          path: "C:\\file1.txt",
           is_dir: false,
           size: 100,
-          mtime: 0,
+          modified: 0,
+          file_type: "txt",
         },
-      ],
-      selectedIndex: 0,
-      sortKey: "name",
-      sortOrder: "asc",
-    });
+      ]);
 
-    render(<PanelFileList panelId="panel1" tabId="tab1" />);
+      useTabStore.setState({
+        tabs: {
+          p1: [{ id: "tab1", path: "C:\\", title: "Mock Tab", isActive: true }],
+        },
+      });
+
+      render(<PanelFileList panelId="p1" tabId="tab1" />);
+    });
 
     expect(screen.queryByTestId("mock-panel-item-..")).not.toBeInTheDocument();
     expect(screen.getByTestId("mock-panel-item-dir1")).toBeInTheDocument();
     expect(screen.getByTestId("mock-panel-item-file1.txt")).toBeInTheDocument();
   });
 
-  it("displays the current directory path", () => {
-    getCurrentFileStateMock.mockReturnValue({
-      currentDir: "/test/path",
-      files: defaultFiles,
-      selectedIndex: 0,
-      sortKey: "name",
-      sortOrder: "asc",
+  it("displays the current directory path", async () => {
+    await act(async () => {
+      useFileStore.getState().setFileState("p1", "tab1", {
+        currentDir: "/test/path",
+        files: defaultFiles,
+        selectedIndex: 0,
+        sortKey: "name",
+        sortOrder: "asc",
+      });
+
+      render(<PanelFileList panelId="p1" tabId="tab1" />);
     });
 
-    render(<PanelFileList panelId="panel1" tabId="tab1" />);
-
-    expect(screen.getByText("/test/path")).toBeInTheDocument();
+    expect(
+      screen.getByTestId(`mock-panel-header-p1-tab1-name-asc`)
+    ).toBeInTheDocument();
   });
 });

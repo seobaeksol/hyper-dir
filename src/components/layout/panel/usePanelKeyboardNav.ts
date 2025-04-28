@@ -5,7 +5,7 @@ import { useUIStore } from "@/state/uiStore";
 import { usePanelStore } from "@/state/panelStore";
 import { moveDirectory } from "@/state/actions";
 
-export function usePanelKeyboardNav(panelId: string) {
+export function usePanelKeyboardNav(panelId: string, pageSize: number = 5) {
   const { getCurrentFileState, setFileState } = useFileStore();
   const commandPaletteVisible = useUIStore((s) => s.commandPaletteVisible);
   const { panels, activePanelId } = usePanelStore();
@@ -74,9 +74,33 @@ export function usePanelKeyboardNav(panelId: string) {
           moveDirectory(panel.activeTabId, target.path);
         }
       }
+
+      if (!isAlt && e.key === "PageDown") {
+        e.preventDefault();
+        if (files.length > 0) {
+          setFileState(panelId, panel.activeTabId, {
+            selectedIndex: Math.min(selectedIndex + pageSize, files.length - 1),
+          });
+        }
+      }
+
+      if (!isAlt && e.key === "PageUp") {
+        e.preventDefault();
+        if (files.length > 0) {
+          setFileState(panelId, panel.activeTabId, {
+            selectedIndex: Math.max(selectedIndex - pageSize, 0),
+          });
+        }
+      }
     };
 
     window.addEventListener("keydown", panelKeyEventHandler);
     return () => window.removeEventListener("keydown", panelKeyEventHandler);
-  }, [commandPaletteVisible, panel, activePanelId]);
+  }, [
+    commandPaletteVisible,
+    panel,
+    activePanelId,
+    getCurrentFileState,
+    pageSize,
+  ]);
 }

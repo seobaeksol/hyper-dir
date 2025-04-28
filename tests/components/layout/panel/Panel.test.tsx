@@ -5,8 +5,8 @@ import { usePanelStore } from "@/state/panelStore";
 import { useTabStore } from "@/state/tabStore";
 
 describe("Panel", () => {
-  afterEach(async () => {
-    await act(async () => {
+  afterEach(() => {
+    act(() => {
       usePanelStore.setState({ panels: [] });
       useTabStore.setState({ tabs: {} });
     });
@@ -16,8 +16,8 @@ describe("Panel", () => {
     render(<Panel panelId="test-panel" />);
   });
 
-  it("renders Tabbar always and PanelFileList when activeTab exists", async () => {
-    await act(async () => {
+  it("renders Tabbar always and PanelFileList when activeTab exists", () => {
+    act(() => {
       usePanelStore.setState({
         panels: [
           {
@@ -46,8 +46,8 @@ describe("Panel", () => {
     expect(getByTestId("panelfilelist")).toBeInTheDocument();
   });
 
-  it("renders Tabbar but not PanelFileList if no activeTab", async () => {
-    await act(async () => {
+  it("renders Tabbar but not PanelFileList if no activeTab", () => {
+    act(() => {
       usePanelStore.setState({
         panels: [
           {

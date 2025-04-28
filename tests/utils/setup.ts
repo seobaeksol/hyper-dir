@@ -1,3 +1,5 @@
 // tests/utils/setup.ts
 import "@testing-library/jest-dom";
-import "../__mocks__/zustand";
+import { vi } from "vitest";
+
+vi.mock("zustand");

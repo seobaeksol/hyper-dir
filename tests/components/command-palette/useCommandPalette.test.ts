@@ -99,7 +99,7 @@ describe("useCommandPalette", () => {
     expect(result2.current.mode).toBe("search");
   });
 
-  it("should call setQuery", () => {
+  it("should call setQuery", async () => {
     const setQuery = vi.fn();
     (useCommandStore as any).mockReturnValueOnce({
       query: "",
@@ -111,13 +111,13 @@ describe("useCommandPalette", () => {
       cancelPrompt: vi.fn(),
     });
     const { result } = renderHook(() => useCommandPalette());
-    act(() => {
+    await act(async () => {
       result.current.setQuery("new query");
     });
     expect(setQuery).toHaveBeenCalledWith("new query");
   });
 
-  it("should handle onCommandExecute and close palette", () => {
+  it("should handle onCommandExecute and close palette", async () => {
     const setVisible = vi.fn();
     (useUIStore as any).mockImplementation((fn: any) =>
       fn({
@@ -136,14 +136,14 @@ describe("useCommandPalette", () => {
       cancelPrompt: vi.fn(),
     });
     const { result } = renderHook(() => useCommandPalette());
-    act(() => {
+    await act(async () => {
       result.current.onCommandExecute({ id: 1, title: "Test", action });
     });
     expect(action).toHaveBeenCalled();
     expect(setVisible).toHaveBeenCalledWith(false);
   });
 
-  it("should handle onFileExecute for directory", () => {
+  it("should handle onFileExecute for directory", async () => {
     const setVisible = vi.fn();
     (useUIStore as any).mockImplementation((fn: any) =>
       fn({
@@ -158,14 +158,14 @@ describe("useCommandPalette", () => {
     const moveDir = vi.fn();
     (moveDirectory as any).mockImplementation(moveDir);
     const { result } = renderHook(() => useCommandPalette());
-    act(() => {
+    await act(async () => {
       result.current.onFileExecute(file);
     });
     expect(moveDir).toHaveBeenCalledWith("tab1", "/bar");
     expect(setVisible).toHaveBeenCalledWith(false);
   });
 
-  it("should handle onFileExecute for file", () => {
+  it("should handle onFileExecute for file", async () => {
     const setVisible = vi.fn();
     (useUIStore as any).mockImplementation((fn: any) =>
       fn({
@@ -175,14 +175,14 @@ describe("useCommandPalette", () => {
     );
     const file = { name: "foo.txt", path: "/foo", is_dir: false };
     const { result } = renderHook(() => useCommandPalette());
-    act(() => {
+    await act(async () => {
       result.current.onFileExecute(file);
     });
     // Should not call moveDirectory
     expect(setVisible).toHaveBeenCalledWith(false);
   });
 
-  it("should handle prompt logic", () => {
+  it("should handle prompt logic", async () => {
     const startPrompt = vi.fn();
     const resolvePrompt = vi.fn();
     const cancelPrompt = vi.fn();
@@ -196,7 +196,7 @@ describe("useCommandPalette", () => {
       cancelPrompt,
     });
     const { result } = renderHook(() => useCommandPalette());
-    act(() => {
+    await act(async () => {
       result.current.prompt && result.current.prompt.message;
       // Simulate prompt actions
       startPrompt();
@@ -209,7 +209,7 @@ describe("useCommandPalette", () => {
   });
 
   // New test for keyboard handling in prompt mode
-  it("should handle keyboard events in prompt mode", () => {
+  it("should handle keyboard events in prompt mode", async () => {
     const setVisible = vi.fn();
     const resolvePrompt = vi.fn();
     const cancelPrompt = vi.fn();
@@ -285,7 +285,7 @@ describe("useCommandPalette", () => {
   });
 
   // Add test for setting promptInput
-  it("should set promptInput with initialValue from prompt", () => {
+  it("should set promptInput with initialValue from prompt", async () => {
     (useCommandStore as any).mockReturnValueOnce({
       query: "",
       commands: defaultCommands,
@@ -300,7 +300,7 @@ describe("useCommandPalette", () => {
     expect(result.current.promptInput).toBe("initial");
 
     // Test updating promptInput
-    act(() => {
+    await act(async () => {
       result.current.setPromptInput("updated value");
     });
 

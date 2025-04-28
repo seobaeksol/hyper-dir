@@ -68,7 +68,7 @@ export const PanelFileList = ({ panelId, tabId }: PanelFileListProps) => {
   }, [otherFiles, parentEntry, sortKey, sortOrder]);
 
   // Render nothing or a fallback if tab is undefined
-  if (!tab) {
+  if (!tab || sortedFiles.length === 0) {
     return (
       <div
         className="flex flex-col h-[calc(100%-2rem)]"
