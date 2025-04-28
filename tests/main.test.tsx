@@ -1,15 +1,20 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "@/App";
 
 // Mock dependencies
-vi.mock("react-dom/client", () => ({
-  createRoot: vi.fn(() => ({
-    render: vi.fn(),
-  })),
-}));
+vi.mock("react-dom/client", () => {
+  const mockRender = vi.fn();
+  const mockRoot = {
+    render: mockRender,
+    unmount: vi.fn(),
+  };
+  return {
+    createRoot: vi.fn(() => mockRoot),
+    default: { createRoot: vi.fn(() => mockRoot) },
+  };
+});
 
 vi.mock("@/App", () => ({
   default: vi.fn(() => <div>Mock App</div>),
@@ -25,18 +30,19 @@ describe("main.tsx", () => {
     document.body.appendChild(mockRoot);
   });
 
+  afterEach(() => {
+    document.body.removeChild(mockRoot);
+  });
+
   it("should render the app in React.StrictMode", async () => {
-    // Import the main module which triggers the render
+    // Import main module which triggers the render
     await import("@/main");
 
     // Verify createRoot was called with the root element
-    expect(ReactDOM.createRoot).toHaveBeenCalledWith(
-      document.getElementById("root")
-    );
+    expect(ReactDOM.createRoot).toHaveBeenCalledWith(mockRoot);
 
     // Get the render function that was called
-    const mockRender = (ReactDOM.createRoot as any).mock.results[0].value
-      .render;
+    const mockRender = (ReactDOM.createRoot as any).mock.results[0].value.render;
 
     // Verify the render function was called
     expect(mockRender).toHaveBeenCalledTimes(1);
