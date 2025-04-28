@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { usePanelKeyboardNav } from "../../../../src/components/layout/panel/usePanelKeyboardNav";
+import { usePanelKeyboardNav } from "@/components/layout/panel/usePanelKeyboardNav";
 import { useFileStore, useTabStore, useUIStore, usePanelStore } from "@/state";
 import { moveDirectory } from "@/state/actions";
 

@@ -8,10 +8,10 @@ export default defineConfig({
     },
   },
   test: {
-    root: "./tests",
+    root: "./src",
     environment: "jsdom",
     globals: true,
-    setupFiles: "./tests/utils/setup.ts",
+    setupFiles: "./setup.vitest.ts",
     coverage: {
       provider: "istanbul",
       exclude: [
