@@ -5,6 +5,16 @@
 **Hyper-Dir** is a productivity-focused, keyboard-first file explorer replacement for Windows.  
 Built with **Tauri + Rust + React**, it is designed to enhance directory navigation for developers and power users who want speed, tabs, fuzzy search, and full keyboard control.
 
+## 📸 Screenshots
+
+### File Explorer View
+
+![File Explorer](./assets/screenshot-files.png)
+
+### Command Palette
+
+![Command Palette](./assets/screenshot-commands.png)
+
 ---
 
 ## 🔥 Vision
