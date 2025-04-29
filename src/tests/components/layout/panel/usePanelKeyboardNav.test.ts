@@ -946,18 +946,20 @@ describe("usePanelKeyboardNav", () => {
       renderHook(() => usePanelKeyboardNav(mockPanel.id));
     });
 
-    // Press ArrowDown three times
-    await act(async () => {
-      for (let i = 0; i < 3; i++) {
+    // Press ArrowDown three times with state updates in between
+    for (let i = 0; i < 3; i++) {
+      await act(async () => {
         const keydownEvent = new KeyboardEvent("keydown", { key: "ArrowDown" });
         window.dispatchEvent(keydownEvent);
-      }
-    });
+      });
+    }
 
-    const selectionId = useFileStore
-      .getState()
-      .getCurrentFileState(mockPanel.id, mockPanel.activeTabId).selectedIndex;
-    expect(selectionId).toBe(3);
+    await waitFor(async () => {
+      const selectionId = useFileStore
+        .getState()
+        .getCurrentFileState(mockPanel.id, mockPanel.activeTabId).selectedIndex;
+      expect(selectionId).toBe(3);
+    });
   });
 
   it("should handle multiple ArrowUp key presses", async () => {
@@ -994,18 +996,20 @@ describe("usePanelKeyboardNav", () => {
       renderHook(() => usePanelKeyboardNav(mockPanel.id));
     });
 
-    // Press ArrowUp three times
-    await act(async () => {
-      for (let i = 0; i < 3; i++) {
+    // Press ArrowUp three times with state updates in between
+    for (let i = 0; i < 3; i++) {
+      await act(async () => {
         const keydownEvent = new KeyboardEvent("keydown", { key: "ArrowUp" });
         window.dispatchEvent(keydownEvent);
-      }
-    });
+      });
+    }
 
-    const selectionId = useFileStore
-      .getState()
-      .getCurrentFileState(mockPanel.id, mockPanel.activeTabId).selectedIndex;
-    expect(selectionId).toBe(2);
+    await waitFor(async () => {
+      const selectionId = useFileStore
+        .getState()
+        .getCurrentFileState(mockPanel.id, mockPanel.activeTabId).selectedIndex;
+      expect(selectionId).toBe(2);
+    });
   });
 
   it("should handle alternating ArrowUp and ArrowDown key presses", async () => {
@@ -1042,18 +1046,20 @@ describe("usePanelKeyboardNav", () => {
       renderHook(() => usePanelKeyboardNav(mockPanel.id));
     });
 
-    // Press ArrowDown, ArrowUp, ArrowDown
-    await act(async () => {
-      const keys = ["ArrowDown", "ArrowUp", "ArrowDown"];
-      for (const key of keys) {
+    // Press ArrowDown, ArrowUp, ArrowDown with state updates in between
+    const keys = ["ArrowDown", "ArrowUp", "ArrowDown"];
+    for (const key of keys) {
+      await act(async () => {
         const keydownEvent = new KeyboardEvent("keydown", { key });
         window.dispatchEvent(keydownEvent);
-      }
-    });
+      });
+    }
 
-    const selectionId = useFileStore
-      .getState()
-      .getCurrentFileState(mockPanel.id, mockPanel.activeTabId).selectedIndex;
-    expect(selectionId).toBe(3);
+    await waitFor(async () => {
+      const selectionId = useFileStore
+        .getState()
+        .getCurrentFileState(mockPanel.id, mockPanel.activeTabId).selectedIndex;
+      expect(selectionId).toBe(3);
+    });
   });
 });

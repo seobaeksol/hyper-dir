@@ -14,11 +14,10 @@ export function usePanelKeyboardNav(panelId: string, pageSize: number = 5) {
   useEffect(() => {
     if (commandPaletteVisible || !panel || panel.id !== activePanelId) return;
 
-    const fileState = getCurrentFileState(panelId, panel.activeTabId);
-    const { files, selectedIndex } = fileState;
-
     const panelKeyEventHandler = (e: KeyboardEvent) => {
       const isAlt = e.altKey;
+      const fileState = getCurrentFileState(panelId, panel.activeTabId);
+      const { files, selectedIndex } = fileState;
 
       if (!isAlt && e.key === "ArrowUp") {
         e.preventDefault();
