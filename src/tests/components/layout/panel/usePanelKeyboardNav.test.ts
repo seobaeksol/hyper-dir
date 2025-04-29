@@ -911,4 +911,149 @@ describe("usePanelKeyboardNav", () => {
       );
     });
   });
+
+  it("should handle multiple ArrowDown key presses", async () => {
+    await act(async () => {
+      usePanelStore.setState({
+        panels: [mockPanel],
+        activePanelId: mockPanel.id,
+      });
+
+      useTabStore.setState({
+        tabs: {
+          [mockPanel.id]: [mockTab],
+        },
+      });
+
+      useUIStore.setState({
+        commandPaletteVisible: false,
+      });
+
+      useFileStore.setState({
+        fileStates: {
+          [mockPanel.id]: {
+            [mockPanel.activeTabId]: {
+              files: mockFiles,
+              currentDir: mockPanel.path,
+              selectedIndex: 0,
+              sortKey: "name",
+              sortOrder: "asc",
+            },
+          },
+        },
+      });
+
+      renderHook(() => usePanelKeyboardNav(mockPanel.id));
+    });
+
+    // Press ArrowDown three times
+    await act(async () => {
+      for (let i = 0; i < 3; i++) {
+        const keydownEvent = new KeyboardEvent("keydown", { key: "ArrowDown" });
+        window.dispatchEvent(keydownEvent);
+      }
+    });
+
+    const selectionId = useFileStore
+      .getState()
+      .getCurrentFileState(mockPanel.id, mockPanel.activeTabId).selectedIndex;
+    expect(selectionId).toBe(3);
+  });
+
+  it("should handle multiple ArrowUp key presses", async () => {
+    await act(async () => {
+      usePanelStore.setState({
+        panels: [mockPanel],
+        activePanelId: mockPanel.id,
+      });
+
+      useTabStore.setState({
+        tabs: {
+          [mockPanel.id]: [mockTab],
+        },
+      });
+
+      useUIStore.setState({
+        commandPaletteVisible: false,
+      });
+
+      useFileStore.setState({
+        fileStates: {
+          [mockPanel.id]: {
+            [mockPanel.activeTabId]: {
+              files: mockFiles,
+              currentDir: mockPanel.path,
+              selectedIndex: 5,
+              sortKey: "name",
+              sortOrder: "asc",
+            },
+          },
+        },
+      });
+
+      renderHook(() => usePanelKeyboardNav(mockPanel.id));
+    });
+
+    // Press ArrowUp three times
+    await act(async () => {
+      for (let i = 0; i < 3; i++) {
+        const keydownEvent = new KeyboardEvent("keydown", { key: "ArrowUp" });
+        window.dispatchEvent(keydownEvent);
+      }
+    });
+
+    const selectionId = useFileStore
+      .getState()
+      .getCurrentFileState(mockPanel.id, mockPanel.activeTabId).selectedIndex;
+    expect(selectionId).toBe(2);
+  });
+
+  it("should handle alternating ArrowUp and ArrowDown key presses", async () => {
+    await act(async () => {
+      usePanelStore.setState({
+        panels: [mockPanel],
+        activePanelId: mockPanel.id,
+      });
+
+      useTabStore.setState({
+        tabs: {
+          [mockPanel.id]: [mockTab],
+        },
+      });
+
+      useUIStore.setState({
+        commandPaletteVisible: false,
+      });
+
+      useFileStore.setState({
+        fileStates: {
+          [mockPanel.id]: {
+            [mockPanel.activeTabId]: {
+              files: mockFiles,
+              currentDir: mockPanel.path,
+              selectedIndex: 2,
+              sortKey: "name",
+              sortOrder: "asc",
+            },
+          },
+        },
+      });
+
+      renderHook(() => usePanelKeyboardNav(mockPanel.id));
+    });
+
+    // Press ArrowDown, ArrowUp, ArrowDown
+    await act(async () => {
+      const keys = ["ArrowDown", "ArrowUp", "ArrowDown"];
+      for (const key of keys) {
+        const keydownEvent = new KeyboardEvent("keydown", { key });
+        window.dispatchEvent(keydownEvent);
+      }
+    });
+
+    const selectionId = useFileStore
+      .getState()
+      .getCurrentFileState(mockPanel.id, mockPanel.activeTabId).selectedIndex;
+    expect(selectionId).toBe(3);
+  });
 });
