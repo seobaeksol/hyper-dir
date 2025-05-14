@@ -9,6 +9,7 @@ export interface Toast {
 }
 
 interface ToastStore {
+  toastId: number;
   toasts: Toast[];
   showToast: (
     message: string,
@@ -17,12 +18,11 @@ interface ToastStore {
   removeToast: (id: number) => void;
 }
 
-let toastId = 0;
-
-export const useToastStore = create<ToastStore>((set) => ({
+export const useToastStore = create<ToastStore>((set, get) => ({
+  toastId: 0,
   toasts: [],
   showToast: (message, options) => {
-    const id = ++toastId;
+    const id = ++get().toastId;
     const createdAt = Date.now();
     const toast: Toast = { id, message, createdAt, ...options };
     set((state) => ({ toasts: [...state.toasts, toast] }));

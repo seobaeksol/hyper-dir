@@ -26,14 +26,18 @@ export const ToastContainer = () => {
               ${toast.type === "error" ? "bg-red-600" : "bg-blue-600"}`}
             onClick={() => removeToast(toast.id)}
             style={{ minWidth: 200 }}
+            data-testid={`toast-${toast.id}`}
           >
-            <span className="px-4">{toast.message}</span>
+            <span className="px-4" data-testid={`toast-message-${toast.id}`}>
+              {toast.message}
+            </span>
             <div className="w-full h-0.5 mt-1 relative rounded">
               <div
                 className={`absolute left-0 top-0 h-full rounded ${
                   toast.type === "error" ? "bg-red-100" : "bg-blue-100"
                 }`}
                 style={{ width: `${progress * 100}%` }}
+                data-testid={`progress-bar-${toast.id}`}
               />
             </div>
           </div>
