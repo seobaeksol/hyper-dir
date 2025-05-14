@@ -4,6 +4,7 @@ import { useFileStore } from "@/state/fileStore";
 import { useUIStore } from "@/state/uiStore";
 import { usePanelStore } from "@/state/panelStore";
 import { moveDirectory } from "@/state/actions";
+import { useTabStore } from "@/state/tabStore";
 
 export function usePanelKeyboardNav(panelId: string, pageSize: number = 5) {
   const { getCurrentFileState, setFileState } = useFileStore();
@@ -21,6 +22,7 @@ export function usePanelKeyboardNav(panelId: string, pageSize: number = 5) {
       const isAlt = e.altKey;
       const fileState = getCurrentFileState(panelId, panel.activeTabId);
       const { files, selectedIndex } = fileState;
+      const tab = useTabStore.getState().getTabById(panelId, panel.activeTabId);
 
       if (!isAlt && e.key === "ArrowUp") {
         e.preventDefault();
@@ -93,6 +95,12 @@ export function usePanelKeyboardNav(panelId: string, pageSize: number = 5) {
             selectedIndex: Math.max(selectedIndex - pageSize, 0),
           });
         }
+      }
+
+      if (e.ctrlKey && e.key.toLowerCase() === "l") {
+        e.preventDefault();
+        tab?.addressBarRef?.current?.click();
+        return;
       }
     };
 

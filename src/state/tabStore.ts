@@ -1,14 +1,16 @@
 import { create } from "zustand";
 import { nanoid } from "nanoid";
+import { RefObject } from "react";
 
-export interface Tab { 
+export interface Tab {
   id: string;
   path: string;
   title: string;
   isActive: boolean;
-};
+  addressBarRef?: RefObject<HTMLSpanElement | null>;
+}
 
-interface TabStore { 
+interface TabStore {
   tabs: Record<string, Tab[]>; // panelId -> tabs
 
   addTab: (panelId: string, path: string) => string;
@@ -20,10 +22,15 @@ interface TabStore {
     title?: string,
     path?: string
   ) => void;
+  updateTabAddressBarRef: (
+    panelId: string,
+    tabId: string,
+    addressBarRef: RefObject<HTMLSpanElement | null>
+  ) => void;
   getTabsByPanelId: (panelId: string) => Tab[];
   getActiveTab: (panelId: string) => Tab | undefined;
   getTabById: (panelId: string, tabId: string) => Tab | undefined;
-};
+}
 
 export const useTabStore = create<TabStore>((set, get) => ({
   tabs: {},
@@ -35,7 +42,12 @@ export const useTabStore = create<TabStore>((set, get) => ({
 
     const tabId = nanoid();
     const title = path.split(/[/\\]/).pop() || path;
-    const newTab: Tab = { id: tabId, path, title, isActive: true };
+    const newTab: Tab = {
+      id: tabId,
+      path,
+      title,
+      isActive: true,
+    };
 
     set((state) => ({
       tabs: {
@@ -96,6 +108,22 @@ export const useTabStore = create<TabStore>((set, get) => ({
                 ...t,
                 title: title ?? t.title,
                 path: path ?? t.path,
+              }
+            : t
+        ),
+      },
+    }));
+  },
+
+  updateTabAddressBarRef: (panelId, tabId, addressBarRef) => {
+    set((state) => ({
+      tabs: {
+        ...state.tabs,
+        [panelId]: (state.tabs[panelId] || []).map((t) =>
+          t.id === tabId
+            ? {
+                ...t,
+                addressBarRef,
               }
             : t
         ),

@@ -1062,4 +1062,95 @@ describe("usePanelKeyboardNav", () => {
       expect(selectionId).toBe(3);
     });
   });
+
+  it("should call addressBarRef click on Ctrl+L", async () => {
+    const span = document.createElement("span");
+    const clickMock = vi.fn();
+    span.click = clickMock; // mock the click method
+
+    const addressBarRef = { current: span };
+
+    // getTabById to mock the correct signature
+    useTabStore.setState({
+      getTabById: () => ({
+        ...mockTab,
+        addressBarRef,
+      }),
+    });
+
+    usePanelStore.setState({
+      panels: [mockPanel],
+      activePanelId: mockPanel.id,
+    });
+
+    useUIStore.setState({
+      commandPaletteVisible: false,
+    });
+
+    useFileStore.setState({
+      fileStates: {
+        [mockPanel.id]: {
+          [mockPanel.activeTabId]: {
+            files: mockFiles,
+            currentDir: mockPanel.path,
+            selectedIndex: 0,
+            sortKey: "name",
+            sortOrder: "asc",
+          },
+        },
+      },
+    });
+
+    renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    // Ctrl+L key event
+    const event = new KeyboardEvent("keydown", { key: "l", ctrlKey: true });
+    window.dispatchEvent(event);
+
+    expect(clickMock).toHaveBeenCalled();
+  });
+
+  it("should ignore key events when target is input element", async () => {
+    usePanelStore.setState({
+      panels: [mockPanel],
+      activePanelId: mockPanel.id,
+    });
+
+    useUIStore.setState({
+      commandPaletteVisible: false,
+    });
+
+    useFileStore.setState({
+      fileStates: {
+        [mockPanel.id]: {
+          [mockPanel.activeTabId]: {
+            files: mockFiles,
+            currentDir: mockPanel.path,
+            selectedIndex: 0,
+            sortKey: "name",
+            sortOrder: "asc",
+          },
+        },
+      },
+    });
+
+    renderHook(() => usePanelKeyboardNav(mockPanel.id));
+
+    // Reset called count
+    vi.clearAllMocks();
+
+    // Trigger a key event with an input element as the target
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+
+    const event = new KeyboardEvent("keydown", { key: "ArrowDown" });
+    Object.defineProperty(event, "target", { value: input });
+
+    window.dispatchEvent(event);
+
+    // setFileState should not be called
+    expect(useFileStore.setState).not.toHaveBeenCalled();
+
+    document.body.removeChild(input);
+  });
 });

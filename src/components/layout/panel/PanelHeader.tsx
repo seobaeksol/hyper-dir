@@ -1,8 +1,17 @@
 // src/components/layout/panel/PanelHeader.tsx
 import { SortKey, SortOrder } from "@/state/fileStore";
 import { setSort, setCurrentDir, moveDirectory } from "@/state/actions";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { usePathAliases } from "@/state/pathAliasStore";
+import { useTabStore } from "@/state/tabStore";
+
+interface PanelHeaderProps {
+  panelId: string;
+  tabId: string;
+  sortKey: SortKey;
+  sortOrder: SortOrder;
+  currentDir: string;
+}
 
 export const PanelHeader = ({
   panelId,
@@ -10,16 +19,16 @@ export const PanelHeader = ({
   sortKey,
   sortOrder,
   currentDir,
-}: {
-  panelId: string;
-  tabId: string;
-  sortKey: SortKey;
-  sortOrder: SortOrder;
-  currentDir: string;
-}) => {
+}: PanelHeaderProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(currentDir);
   const { aliases } = usePathAliases("hyper-dir");
+  const { updateTabAddressBarRef } = useTabStore();
+  const addressBarRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    updateTabAddressBarRef(panelId, tabId, addressBarRef);
+  }, [addressBarRef]);
 
   const handleDirClick = () => {
     setIsEditing(true);
@@ -64,11 +73,13 @@ export const PanelHeader = ({
             onChange={(e) => setEditValue(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={() => setIsEditing(false)}
+            onFocus={(e) => e.target.select()}
             className="w-full bg-zinc-800 text-white px-1 py-0.5 rounded"
             autoFocus
           />
         ) : (
           <span
+            ref={addressBarRef}
             className="cursor-pointer hover:opacity-100 transition-opacity block w-full"
             onClick={handleDirClick}
           >

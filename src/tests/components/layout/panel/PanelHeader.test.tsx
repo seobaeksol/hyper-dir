@@ -1,4 +1,10 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act,
+} from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { PanelHeader } from "@/components/layout/panel/PanelHeader";
 import * as actions from "@/state/actions";
@@ -211,6 +217,7 @@ describe("PanelHeader", () => {
     });
   });
 
+  // TODO: It seems to have infinite rendering.
   describe("currentDir editing", () => {
     it("displays currentDir as plain text by default", () => {
       render(
@@ -299,6 +306,107 @@ describe("PanelHeader", () => {
           screen.queryByDisplayValue("/test/path")
         ).not.toBeInTheDocument();
       });
+    });
+  });
+
+  it("calls moveDirectory when Enter is pressed and alias exists", async () => {
+    // Return alias when usePathAliases is called
+    vi.doMock("@/state/pathAliasStore", () => ({
+      usePathAliases: () => ({
+        aliases: { "/alias": "/real/path" },
+      }),
+    }));
+
+    await act(async () => {
+      render(
+        <PanelHeader
+          panelId={panelId}
+          tabId={tabId}
+          sortKey="name"
+          sortOrder="asc"
+          currentDir="/test/path"
+        />
+      );
+    });
+
+    await waitFor(() => {
+      const dirElement = screen.getByText("/test/path");
+      fireEvent.click(dirElement);
+
+      const input = screen.getByDisplayValue("/test/path");
+      fireEvent.change(input, { target: { value: "/alias" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      expect(actions.moveDirectory).toHaveBeenCalledWith(tabId, "/real/path");
+    });
+  });
+
+  it("should exit edit mode on blur", async () => {
+    render(
+      <PanelHeader
+        panelId={panelId}
+        tabId={tabId}
+        sortKey="name"
+        sortOrder="asc"
+        currentDir="/test/path"
+      />
+    );
+
+    await waitFor(() => {
+      const dirElement = screen.getByText("/test/path");
+      fireEvent.click(dirElement);
+
+      const input = screen.getByDisplayValue("/test/path");
+      fireEvent.blur(input);
+
+      // The input should disappear and the span should reappear because isEditing state becomes false
+      expect(screen.getByText("/test/path")).toBeInTheDocument();
+    });
+  });
+
+  it("should select input text on focus", async () => {
+    render(
+      <PanelHeader
+        panelId={panelId}
+        tabId={tabId}
+        sortKey="name"
+        sortOrder="asc"
+        currentDir="/test/path"
+      />
+    );
+
+    await waitFor(() => {
+      const dirElement = screen.getByText("/test/path");
+      fireEvent.click(dirElement);
+
+      const input = screen.getByDisplayValue("/test/path") as HTMLInputElement;
+      // select method mock
+      input.select = vi.fn();
+      fireEvent.focus(input);
+
+      expect(input.select).toHaveBeenCalled();
+    });
+  });
+
+  it("should call updateTabAddressBarRef on mount", () => {
+    const updateTabAddressBarRef = vi.fn();
+    // mock useTabStore to track updateTabAddressBarRef
+    vi.spyOn(useTabStore, "getState").mockReturnValue({
+      updateTabAddressBarRef,
+    } as any);
+
+    render(
+      <PanelHeader
+        panelId={panelId}
+        tabId={tabId}
+        sortKey="name"
+        sortOrder="asc"
+        currentDir="/test/path"
+      />
+    );
+
+    waitFor(() => {
+      expect(updateTabAddressBarRef).toHaveBeenCalled();
     });
   });
 });

@@ -289,4 +289,53 @@ describe("state/tabStore", () => {
       expect(notFoundTab).toBeUndefined();
     });
   });
+
+  describe("updateTabAddressBarRef", () => {
+    let tabs: Tab[];
+    const panelId = "panel-1";
+
+    beforeEach(() => {
+      useTabStore.setState({ tabs: {} });
+      const { addTab } = useTabStore.getState();
+      addTab(panelId, "C:\\test\\path1");
+      tabs = [...useTabStore.getState().tabs[panelId]];
+    });
+
+    it("should update the addressBarRef of a tab", () => {
+      const { updateTabAddressBarRef } = useTabStore.getState();
+      const tabToUpdate = tabs[0];
+      const refObj = { current: document.createElement("span") };
+
+      updateTabAddressBarRef(panelId, tabToUpdate.id, refObj);
+
+      const updatedTab = useTabStore
+        .getState()
+        .tabs[panelId].find((t) => t.id === tabToUpdate.id);
+
+      expect(updatedTab?.addressBarRef).toBe(refObj);
+    });
+
+    it("should not throw if tab does not exist", () => {
+      const { updateTabAddressBarRef } = useTabStore.getState();
+      const refObj = { current: document.createElement("span") };
+
+      expect(() =>
+        updateTabAddressBarRef(panelId, "nonexistent-tab", refObj)
+      ).not.toThrow();
+    });
+  });
+
+  describe("closeTab edge cases", () => {
+    const panelId = "panel-1";
+
+    beforeEach(() => {
+      useTabStore.setState({ tabs: {} });
+    });
+
+    it("should not throw if closing tab on empty panel", () => {
+      const { closeTab } = useTabStore.getState();
+      expect(() => closeTab(panelId, "any-tab-id")).not.toThrow();
+      expect(useTabStore.getState().tabs[panelId]).toHaveLength(0);
+    });
+  });
 });
