@@ -8,6 +8,7 @@ export function usePathAliases(appName: string) {
   useEffect(() => {
     fetchPathAliases(appName)
       .then(setAliases)
+      .catch(() => {}) // Prevent unhandled rejection
       .finally(() => setLoading(false));
   }, [appName]);
 
