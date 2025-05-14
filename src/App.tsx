@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { PanelWrapper } from "./components/layout/panel/PanelWrapper";
 import { initializeApp } from "./state/actions";
 import { once } from "./utils";
+import { ToastContainer } from "@/components/common/ToastContainer";
 
 const initializeAppOnce = once(initializeApp);
 
@@ -29,6 +30,7 @@ function App() {
       </div>
       <Statusbar />
       <CommandPalette />
+      <ToastContainer />
     </div>
   );
 }

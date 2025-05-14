@@ -228,7 +228,7 @@ describe("state/fileStore", () => {
 
       // State should not be updated on error
       const state = useFileStore.getState().fileStates[panelId]?.[tabId];
-      expect(state).toBeUndefined();
+      expect(state.error).toBeDefined();
 
       consoleErrorSpy.mockRestore();
     });

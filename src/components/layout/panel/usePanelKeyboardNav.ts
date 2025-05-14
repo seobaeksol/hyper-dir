@@ -15,6 +15,9 @@ export function usePanelKeyboardNav(panelId: string, pageSize: number = 5) {
     if (commandPaletteVisible || !panel || panel.id !== activePanelId) return;
 
     const panelKeyEventHandler = (e: KeyboardEvent) => {
+      // Ignore keyboard events if target is an input element
+      if (e.target instanceof HTMLInputElement) return;
+
       const isAlt = e.altKey;
       const fileState = getCurrentFileState(panelId, panel.activeTabId);
       const { files, selectedIndex } = fileState;

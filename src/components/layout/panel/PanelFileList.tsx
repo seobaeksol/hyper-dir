@@ -4,6 +4,7 @@ import { PanelItem } from "./PanelItem";
 import { FileState, useFileStore } from "@/state/fileStore";
 import { useEffect, useMemo } from "react";
 import { useTabStore } from "@/state/tabStore";
+import { useToastStore } from "@/state/toastStore";
 
 interface PanelFileListProps {
   panelId: string;
@@ -13,6 +14,7 @@ interface PanelFileListProps {
 export const PanelFileList = ({ panelId, tabId }: PanelFileListProps) => {
   const { getCurrentFileState } = useFileStore();
   const { getTabById } = useTabStore();
+  const { showToast } = useToastStore();
   const tab = getTabById(panelId, tabId);
 
   useEffect(() => {
@@ -30,7 +32,14 @@ export const PanelFileList = ({ panelId, tabId }: PanelFileListProps) => {
         sortKey: "name",
         sortOrder: "asc",
       } as FileState);
-  const { currentDir, files, selectedIndex, sortKey, sortOrder } = fileState;
+  const { currentDir, files, selectedIndex, sortKey, sortOrder, error } =
+    fileState;
+
+  useEffect(() => {
+    if (error) {
+      showToast(error, { type: "error", duration: 3000 });
+    }
+  }, [error, showToast]);
 
   // Separate parent directory entry and other files
   const [parentEntry, otherFiles] = useMemo(() => {
@@ -68,7 +77,7 @@ export const PanelFileList = ({ panelId, tabId }: PanelFileListProps) => {
   }, [otherFiles, parentEntry, sortKey, sortOrder]);
 
   // Render nothing or a fallback if tab is undefined
-  if (!tab || sortedFiles.length === 0) {
+  if (!tab) {
     return (
       <div
         className="flex flex-col h-[calc(100%-2rem)]"
@@ -88,21 +97,13 @@ export const PanelFileList = ({ panelId, tabId }: PanelFileListProps) => {
       className="flex flex-col h-[calc(100%-2rem)]"
       data-testid="panelfilelist"
     >
-      <div className="p-2">
-        <div className="font-semibold mb-2 text-xs opacity-70 text-white">
-          {currentDir}
-        </div>
-        <div className="overflow-x-auto">
-          <ul className="text-sm min-w-max">
-            <PanelHeader
-              panelId={panelId}
-              tabId={tab.id}
-              sortKey={sortKey}
-              sortOrder={sortOrder}
-            />
-          </ul>
-        </div>
-      </div>
+      <PanelHeader
+        currentDir={currentDir}
+        panelId={panelId}
+        tabId={tab.id}
+        sortKey={sortKey}
+        sortOrder={sortOrder}
+      />
       <div className="flex-1 overflow-auto p-2 pt-0">
         <ul className="text-sm space-y-1 min-w-max">
           {sortedFiles.map((file, idx) => (

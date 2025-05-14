@@ -21,8 +21,10 @@ export default defineConfig({
         "src-tauri",
         "tests",
         "*.config.ts",
+        "__mocks__",
       ],
       reporter: ["text", "lcov", "html"],
+      reportsDirectory: "../coverage",
     },
   },
 });
