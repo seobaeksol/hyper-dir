@@ -11,6 +11,8 @@ export interface FileState {
   currentDir: string;
   sortKey: SortKey;
   sortOrder: SortOrder;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
 interface FileStore {
@@ -100,6 +102,21 @@ export const useFileStore = create<FileStore>((set, get) => ({
   },
 
   loadDirectory: async (panelId, tabId, path) => {
+    // Set loading state
+    set((store) => ({
+      fileStates: {
+        ...store.fileStates,
+        [panelId]: {
+          ...store.fileStates[panelId],
+          [tabId]: {
+            ...store.fileStates[panelId]?.[tabId],
+            isLoading: true,
+            error: null,
+            files: [],
+          },
+        },
+      },
+    }));
     try {
       const files = await readDirectory(path);
 
@@ -130,11 +147,27 @@ export const useFileStore = create<FileStore>((set, get) => ({
               currentDir: path,
               sortKey: store.fileStates[panelId]?.[tabId]?.sortKey || "name",
               sortOrder: store.fileStates[panelId]?.[tabId]?.sortOrder || "asc",
+              isLoading: false,
+              error: null,
             },
           },
         },
       }));
     } catch (error) {
+      set((store) => ({
+        fileStates: {
+          ...store.fileStates,
+          [panelId]: {
+            ...store.fileStates[panelId],
+            [tabId]: {
+              ...store.fileStates[panelId]?.[tabId],
+              isLoading: false,
+              error: error instanceof Error ? error.message : String(error),
+              files: [],
+            },
+          },
+        },
+      }));
       console.error("Failed to load directory:", error);
     }
   },

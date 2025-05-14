@@ -27,7 +27,6 @@ export const PanelHeader = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    console.log(aliases);
     if (e.key === "Enter") {
       const aliasPath = aliases[editValue.toLowerCase()];
       if (aliasPath) {
