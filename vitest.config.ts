@@ -24,6 +24,7 @@ export default defineConfig({
         "__mocks__",
       ],
       reporter: ["text", "lcov", "html"],
+      reportsDirectory: "../coverage",
     },
   },
 });
