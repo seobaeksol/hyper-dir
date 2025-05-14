@@ -179,3 +179,8 @@ export function initializeApp() {
 
   registerDefaultCommands();
 }
+
+export function setCurrentDir(panelId: string, tabId: string, path: string) {
+  const fileStore = useFileStore.getState();
+  fileStore.loadDirectory(panelId, tabId, path);
+}

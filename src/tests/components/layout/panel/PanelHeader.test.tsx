@@ -5,9 +5,10 @@ import * as actions from "@/state/actions";
 import { usePanelStore } from "@/state/panelStore";
 import { useFileStore, useTabStore } from "@/state";
 
-// Mock setSort action
+// Mock setSort and setCurrentDir actions
 vi.mock("@/state/actions", () => ({
   setSort: vi.fn(),
+  setCurrentDir: vi.fn(),
 }));
 
 const panelId = "p1";
@@ -61,6 +62,7 @@ describe("PanelHeader", () => {
         tabId={tabId}
         sortKey="name"
         sortOrder="asc"
+        currentDir="/test"
       />
     );
     expect(screen.getByText("Name ▲")).toBeInTheDocument();
@@ -78,6 +80,7 @@ describe("PanelHeader", () => {
             tabId={tabId}
             sortKey={key}
             sortOrder={order}
+            currentDir="/test"
           />
         );
         const label =
@@ -97,6 +100,7 @@ describe("PanelHeader", () => {
         tabId={tabId}
         sortKey="name"
         sortOrder="asc"
+        currentDir="/test"
       />
     );
     const typeHeader = screen.getByText("Type", { exact: false });
@@ -125,6 +129,7 @@ describe("PanelHeader", () => {
         tabId={tabId}
         sortKey="name"
         sortOrder="asc"
+        currentDir="/test"
       />
     );
     const nameHeader = screen.getByText("Name ▲");
@@ -144,6 +149,7 @@ describe("PanelHeader", () => {
         tabId={tabId}
         sortKey="name"
         sortOrder="desc"
+        currentDir="/test"
       />
     );
     fireEvent.click(screen.getByText("Name ▼"));
@@ -157,6 +163,7 @@ describe("PanelHeader", () => {
         tabId={tabId}
         sortKey="name"
         sortOrder="asc"
+        currentDir="/test"
       />
     );
     const typeHeader = screen.getByText("Type");
@@ -178,5 +185,85 @@ describe("PanelHeader", () => {
       "modified",
       "asc"
     );
+  });
+
+  describe("currentDir editing", () => {
+    it("displays currentDir as plain text by default", () => {
+      render(
+        <PanelHeader
+          panelId={panelId}
+          tabId={tabId}
+          sortKey="name"
+          sortOrder="asc"
+          currentDir="/test/path"
+        />
+      );
+      expect(screen.getByText("/test/path")).toBeInTheDocument();
+    });
+
+    it("transforms into input field when clicked", () => {
+      render(
+        <PanelHeader
+          panelId={panelId}
+          tabId={tabId}
+          sortKey="name"
+          sortOrder="asc"
+          currentDir="/test/path"
+        />
+      );
+
+      const dirElement = screen.getByText("/test/path");
+      fireEvent.click(dirElement);
+
+      const input = screen.getByDisplayValue("/test/path");
+      expect(input).toBeInTheDocument();
+      expect(input.tagName).toBe("INPUT");
+    });
+
+    it("calls setCurrentDir when Enter is pressed", () => {
+      render(
+        <PanelHeader
+          panelId={panelId}
+          tabId={tabId}
+          sortKey="name"
+          sortOrder="asc"
+          currentDir="/test/path"
+        />
+      );
+
+      const dirElement = screen.getByText("/test/path");
+      fireEvent.click(dirElement);
+
+      const input = screen.getByDisplayValue("/test/path");
+      fireEvent.change(input, { target: { value: "/new/path" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      expect(actions.setCurrentDir).toHaveBeenCalledWith(
+        panelId,
+        tabId,
+        "/new/path"
+      );
+    });
+
+    it("reverts to plain text when Escape is pressed", () => {
+      render(
+        <PanelHeader
+          panelId={panelId}
+          tabId={tabId}
+          sortKey="name"
+          sortOrder="asc"
+          currentDir="/test/path"
+        />
+      );
+
+      const dirElement = screen.getByText("/test/path");
+      fireEvent.click(dirElement);
+
+      const input = screen.getByDisplayValue("/test/path");
+      fireEvent.keyDown(input, { key: "Escape" });
+
+      expect(screen.getByText("/test/path")).toBeInTheDocument();
+      expect(screen.queryByDisplayValue("/test/path")).not.toBeInTheDocument();
+    });
   });
 });

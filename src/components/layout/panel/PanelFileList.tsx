@@ -88,21 +88,13 @@ export const PanelFileList = ({ panelId, tabId }: PanelFileListProps) => {
       className="flex flex-col h-[calc(100%-2rem)]"
       data-testid="panelfilelist"
     >
-      <div className="p-2">
-        <div className="font-semibold mb-2 text-xs opacity-70 text-white">
-          {currentDir}
-        </div>
-        <div className="overflow-x-auto">
-          <ul className="text-sm min-w-max">
-            <PanelHeader
-              panelId={panelId}
-              tabId={tab.id}
-              sortKey={sortKey}
-              sortOrder={sortOrder}
-            />
-          </ul>
-        </div>
-      </div>
+      <PanelHeader
+        currentDir={currentDir}
+        panelId={panelId}
+        tabId={tab.id}
+        sortKey={sortKey}
+        sortOrder={sortOrder}
+      />
       <div className="flex-1 overflow-auto p-2 pt-0">
         <ul className="text-sm space-y-1 min-w-max">
           {sortedFiles.map((file, idx) => (
