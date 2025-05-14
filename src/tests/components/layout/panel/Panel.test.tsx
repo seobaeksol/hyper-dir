@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { act, render } from "@testing-library/react";
+import { act, render, waitFor } from "@testing-library/react";
 import { Panel } from "@/components/layout/panel/Panel";
 import { usePanelStore } from "@/state/panelStore";
 import { useTabStore } from "@/state/tabStore";
@@ -42,8 +42,10 @@ describe("Panel", () => {
     });
 
     const { getByTestId } = render(<Panel panelId="test-panel" />);
-    expect(getByTestId("tabbar")).toBeInTheDocument();
-    expect(getByTestId("panelfilelist")).toBeInTheDocument();
+    waitFor(() => {
+      expect(getByTestId("tabbar")).toBeInTheDocument();
+      expect(getByTestId("panelfilelist")).toBeInTheDocument();
+    });
   });
 
   it("renders Tabbar but not PanelFileList if no activeTab", () => {
