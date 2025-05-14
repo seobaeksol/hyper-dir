@@ -32,15 +32,8 @@ export const PanelFileList = ({ panelId, tabId }: PanelFileListProps) => {
         sortKey: "name",
         sortOrder: "asc",
       } as FileState);
-  const {
-    currentDir,
-    files,
-    selectedIndex,
-    sortKey,
-    sortOrder,
-    isLoading,
-    error,
-  } = fileState;
+  const { currentDir, files, selectedIndex, sortKey, sortOrder, error } =
+    fileState;
 
   useEffect(() => {
     if (error) {
