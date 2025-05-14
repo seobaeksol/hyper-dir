@@ -13,9 +13,8 @@ export const CommandInput: React.FC<CommandInputProps> = ({
   prompt,
   query,
   setQuery,
-  onPromptInput,
   promptInput,
-  setPromptInput
+  setPromptInput,
 }) => {
   if (prompt) {
     return (
@@ -23,10 +22,10 @@ export const CommandInput: React.FC<CommandInputProps> = ({
         <div className="mb-2 text-sm text-zinc-300">{prompt.message}</div>
         <input
           type="text"
-          value={promptInput || ''}
-          onChange={e => setPromptInput && setPromptInput(e.target.value)}
+          value={promptInput || ""}
+          onChange={(e) => setPromptInput && setPromptInput(e.target.value)}
           className="w-full px-3 py-2 rounded bg-zinc-800 text-sm focus:outline-none"
-          placeholder={prompt.initialValue || ''}
+          placeholder={prompt.initialValue || ""}
           autoFocus
         />
       </>
@@ -36,7 +35,7 @@ export const CommandInput: React.FC<CommandInputProps> = ({
     <input
       type="text"
       value={query}
-      onChange={e => setQuery(e.target.value)}
+      onChange={(e) => setQuery(e.target.value)}
       className="w-full px-3 py-2 rounded bg-zinc-800 text-sm focus:outline-none"
       placeholder={"> Type a command..."}
       autoFocus

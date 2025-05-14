@@ -13,15 +13,8 @@ function getMode(query: string) {
 const useCommandPalette = () => {
   const visible = useUIStore((s) => s.commandPaletteVisible);
   const setVisible = useUIStore((s) => s.setCommandPaletteVisible);
-  const {
-    query,
-    commands,
-    setQuery,
-    prompt,
-    startPrompt,
-    resolvePrompt,
-    cancelPrompt,
-  } = useCommandStore();
+  const { query, commands, setQuery, prompt, resolvePrompt, cancelPrompt } =
+    useCommandStore();
   const activePanelId = usePanelStore((s) => s.activePanelId);
   const activeTabId = useTabStore((s) => s.getActiveTab(activePanelId)?.id);
   const fileState = useFileStore((s) =>
