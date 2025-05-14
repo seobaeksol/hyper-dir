@@ -1,3 +1,4 @@
+mod config;
 mod fs;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -9,6 +10,7 @@ pub fn run() {
             fs::create_directory,
             fs::remove_file_or_directory,
             fs::rename_file_or_directory,
+            config::get_path_aliases,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,7 +1,8 @@
 // src/components/layout/panel/PanelHeader.tsx
 import { SortKey, SortOrder } from "@/state/fileStore";
-import { setSort, setCurrentDir } from "@/state/actions";
+import { setSort, setCurrentDir, moveDirectory } from "@/state/actions";
 import { useState } from "react";
+import { usePathAliases } from "@/state/pathAliasStore";
 
 export const PanelHeader = ({
   panelId,
@@ -18,6 +19,7 @@ export const PanelHeader = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(currentDir);
+  const { aliases } = usePathAliases("hyper-dir");
 
   const handleDirClick = () => {
     setIsEditing(true);
@@ -25,8 +27,14 @@ export const PanelHeader = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    console.log(aliases);
     if (e.key === "Enter") {
-      setCurrentDir(panelId, tabId, editValue);
+      const aliasPath = aliases[editValue.toLowerCase()];
+      if (aliasPath) {
+        moveDirectory(tabId, aliasPath);
+      } else {
+        setCurrentDir(panelId, tabId, editValue);
+      }
       setIsEditing(false);
     } else if (e.key === "Escape") {
       setIsEditing(false);

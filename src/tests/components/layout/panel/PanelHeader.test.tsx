@@ -4,11 +4,17 @@ import { PanelHeader } from "@/components/layout/panel/PanelHeader";
 import * as actions from "@/state/actions";
 import { usePanelStore } from "@/state/panelStore";
 import { useFileStore, useTabStore } from "@/state";
+import { resolvePathAlias } from "@/config/pathAliases";
 
-// Mock setSort and setCurrentDir actions
+// Mock dependencies
 vi.mock("@/state/actions", () => ({
   setSort: vi.fn(),
   setCurrentDir: vi.fn(),
+  moveDirectory: vi.fn(),
+}));
+
+vi.mock("@/config/pathAliases", () => ({
+  resolvePathAlias: vi.fn(),
 }));
 
 const panelId = "p1";
@@ -264,6 +270,63 @@ describe("PanelHeader", () => {
 
       expect(screen.getByText("/test/path")).toBeInTheDocument();
       expect(screen.queryByDisplayValue("/test/path")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("path alias handling", () => {
+    it("uses moveDirectory when a valid path alias is entered", () => {
+      const mockPath = "C:\\Users\\Test\\Documents";
+      (resolvePathAlias as any).mockReturnValue(mockPath);
+
+      render(
+        <PanelHeader
+          panelId={panelId}
+          tabId={tabId}
+          sortKey="name"
+          sortOrder="asc"
+          currentDir="/test/path"
+        />
+      );
+
+      const dirElement = screen.getByText("/test/path");
+      fireEvent.click(dirElement);
+
+      const input = screen.getByDisplayValue("/test/path");
+      fireEvent.change(input, { target: { value: "documents" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      expect(resolvePathAlias).toHaveBeenCalledWith("documents");
+      expect(actions.moveDirectory).toHaveBeenCalledWith(tabId, mockPath);
+      expect(actions.setCurrentDir).not.toHaveBeenCalled();
+    });
+
+    it("uses setCurrentDir when no path alias is found", () => {
+      (resolvePathAlias as any).mockReturnValue(null);
+
+      render(
+        <PanelHeader
+          panelId={panelId}
+          tabId={tabId}
+          sortKey="name"
+          sortOrder="asc"
+          currentDir="/test/path"
+        />
+      );
+
+      const dirElement = screen.getByText("/test/path");
+      fireEvent.click(dirElement);
+
+      const input = screen.getByDisplayValue("/test/path");
+      fireEvent.change(input, { target: { value: "/custom/path" } });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      expect(resolvePathAlias).toHaveBeenCalledWith("/custom/path");
+      expect(actions.moveDirectory).not.toHaveBeenCalled();
+      expect(actions.setCurrentDir).toHaveBeenCalledWith(
+        panelId,
+        tabId,
+        "/custom/path"
+      );
     });
   });
 });
